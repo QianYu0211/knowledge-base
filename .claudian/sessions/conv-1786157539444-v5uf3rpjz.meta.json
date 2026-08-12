@@ -1,0 +1,24 @@
+{
+  "id": "conv-1786157539444-v5uf3rpjz",
+  "providerId": "claude",
+  "title": "Ingest raw file into wiki knowledge base",
+  "titleGenerationStatus": "success",
+  "createdAt": 1786157539453,
+  "updatedAt": 1786158766013,
+  "lastResponseAt": 1786157784106,
+  "sessionId": "45bfe091-52c2-49d7-901d-6e7c6fd1b066",
+  "selectedModel": "haiku",
+  "providerState": {
+    "providerSessionId": "45bfe091-52c2-49d7-901d-6e7c6fd1b066"
+  },
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 459,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 66432,
+    "contextWindow": 200000,
+    "contextWindowIsAuthoritative": true,
+    "contextTokens": 66891,
+    "percentage": 33
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "conv-1786086922953-n0fh1xt0w",
+  "providerId": "claude",
+  "title": "Clarify seamless OTA update flow",
+  "titleGenerationStatus": "success",
+  "createdAt": 1786086922956,
+  "updatedAt": 1786158759911,
+  "lastResponseAt": 1786158703114,
+  "sessionId": "29aa7aaa-43f6-4dd3-bbbf-4408de674df4",
+  "selectedModel": "haiku",
+  "providerState": {
+    "providerSessionId": "29aa7aaa-43f6-4dd3-bbbf-4408de674df4"
+  },
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 46,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 128896,
+    "contextWindow": 200000,
+    "contextWindowIsAuthoritative": true,
+    "contextTokens": 128942,
+    "percentage": 64
+  }
+}
