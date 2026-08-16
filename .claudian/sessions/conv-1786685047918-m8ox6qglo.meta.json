@@ -1,0 +1,24 @@
+{
+  "id": "conv-1786685047918-m8ox6qglo",
+  "providerId": "claude",
+  "title": "Run /ingest wiki workflow command",
+  "titleGenerationStatus": "success",
+  "createdAt": 1786685047918,
+  "updatedAt": 1786841071404,
+  "lastResponseAt": 1786696856976,
+  "sessionId": "091e9c96-e9d9-4a19-bfcb-cd80f68d4d1f",
+  "selectedModel": "haiku",
+  "providerState": {
+    "providerSessionId": "091e9c96-e9d9-4a19-bfcb-cd80f68d4d1f"
+  },
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 97,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 167680,
+    "contextWindow": 200000,
+    "contextWindowIsAuthoritative": true,
+    "contextTokens": 167777,
+    "percentage": 84
+  }
+}

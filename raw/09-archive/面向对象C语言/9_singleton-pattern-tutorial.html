@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C语言单例模式 - 可视化演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            height: calc(100vh - 80px);
+        }
+        
+        .scene {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 120px);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .scene-title {
+            font-size: 42px;
+            color: #667eea;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .animation-stage {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 20px 0;
+            min-height: 400px;
+            position: relative;
+            border: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .code-display {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 17px;
+            line-height: 1.8;
+            margin: 20px 0;
+            overflow-x: auto;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        
+        .keyword { color: #569cd6; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .type { color: #4ec9b0; }
+        
+        /* 动画对象样式 */
+        .person {
+            width: 100px;
+            height: 140px;
+            position: absolute;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .person-icon {
+            font-size: 70px;
+            text-align: center;
+        }
+        
+        .person-label {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .singleton-object {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            border-radius: 20px;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+            transition: all 0.5s;
+        }
+        
+        .singleton-icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .multiple-objects {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 15px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+            animation: shake 0.5s infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-5px) rotate(-2deg); }
+            75% { transform: translateX(5px) rotate(2deg); }
+        }
+        
+        .memory-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        
+        .memory-block {
+            text-align: center;
+            position: relative;
+        }
+        
+        .memory-box {
+            width: 180px;
+            height: 180px;
+            border: 4px solid #667eea;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            position: relative;
+            transition: all 0.5s;
+        }
+        
+        .memory-box.static {
+            border-color: #22c55e;
+            background: #f0fdf4;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+        }
+        
+        .memory-icon {
+            font-size: 70px;
+            margin-bottom: 10px;
+        }
+        
+        .memory-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+        
+        .flow-step {
+            background: #e0e7ff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            border: 4px solid #667eea;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 180px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .flow-step.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .flow-arrow-icon {
+            font-size: 40px;
+            color: #667eea;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 40px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            padding: 14px 35px;
+            border: none;
+            border-radius: 25px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #e0e7ff;
+            color: #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #c7d2fe;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            max-width: 400px;
+            height: 10px;
+            background: #e0e7ff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .lifecycle-bar {
+            width: 100%;
+            height: 40px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .lifecycle-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            transition: width 2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .call-sequence {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            justify-content: center;
+        }
+        
+        .call-box {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 25px;
+            min-width: 200px;
+            text-align: center;
+            transition: all 0.4s;
+        }
+        
+        .call-box.executed {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+            transform: scale(1.05);
+        }
+        
+        .call-box.skipped {
+            background: #fbbf24;
+            color: white;
+            border-color: #fbbf24;
+            opacity: 0.7;
+        }
+        
+        .address-label {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        /* SVG 箭头样式 */
+        .arrow-line {
+            stroke: #667eea;
+            stroke-width: 4;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-area">
+            
+            <!-- SVG 箭头定义 -->
+            <svg width="0" height="0">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#667eea" />
+                    </marker>
+                </defs>
+            </svg>
+            
+            <!-- 场景1: 生活中的单例 -->
+            <div class="scene active" id="scene1">
+                <h1 class="scene-title">🎯 单例模式</h1>
+                
+                <div class="animation-stage">
+                    <div style="display: flex; justify-content: space-around; width: 100%; align-items: center;">
+                        <div style="text-align: center;" class="fade-in">
+                            <div style="font-size: 120px;">👑</div>
+                            <div style="font-size: 20px; font-weight: bold; margin-top: 15px;">国家总统</div>
+                        </div>
+                        <div style="text-align: center;" class="fade-in" style="animation-delay: 0.2s;">
+                            <div style="font-size: 120px;">🏢</div>
+                            <div style="font-size: 20px; font-weight: bold; margin-top: 15px;">公司CEO</div>
+                        </div>
+                        <div style="text-align: center;" class="fade-in" style="animation-delay: 0.4s;">
+                            <div style="font-size: 120px;">🖨️</div>
+                            <div style="font-size: 20px; font-weight: bold; margin-top: 15px;">硬件设备</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; font-size: 32px; color: #667eea; font-weight: bold; margin-top: 30px;">
+                    全局唯一 · 共享访问
+                </div>
+            </div>
+
+            <!-- 场景2: 问题演示 - 多次创建的混乱 -->
+            <div class="scene" id="scene2">
+                <h1 class="scene-title">⚠️ 问题：多次创建</h1>
+                
+                <div class="animation-stage" id="problem-stage">
+                    <!-- 动画容器 -->
+                </div>
+            </div>
+
+            <!-- 场景3: 单例模式解决方案 -->
+            <div class="scene" id="scene3">
+                <h1 class="scene-title">✅ 单例模式解决</h1>
+                
+                <div class="animation-stage" id="solution-stage" style="position: relative;">
+                    <svg id="solution-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                    </svg>
+                    <div id="solution-objects" style="position: relative; z-index: 2; width: 100%; height: 100%;">
+                        <!-- 对象将在这里生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景4: 静态变量特性 -->
+            <div class="scene" id="scene4">
+                <h1 class="scene-title">🔮 static 关键字</h1>
+                
+                <div class="memory-container">
+                    <div class="memory-block">
+                        <div class="memory-box">
+                            <div class="memory-icon">📦</div>
+                            <div style="font-weight: bold; color: #667eea;">普通变量</div>
+                        </div>
+                        <div class="lifecycle-bar" style="margin-top: 20px;">
+                            <div class="lifecycle-fill" id="normal-life" style="width: 30%;">
+                                短生命周期
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; color: #666;">函数结束即销毁</div>
+                    </div>
+                    
+                    <div style="font-size: 60px; color: #667eea;">→</div>
+                    
+                    <div class="memory-block">
+                        <div class="memory-box static pulse">
+                            <div class="memory-icon">💎</div>
+                            <div style="font-weight: bold; color: #22c55e;">static 变量</div>
+                        </div>
+                        <div class="lifecycle-bar" style="margin-top: 20px;">
+                            <div class="lifecycle-fill" id="static-life" style="width: 100%; background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);">
+                                程序全生命周期
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; color: #22c55e; font-weight: bold;">始终存在，保持状态</div>
+                    </div>
+                </div>
+                
+                <div class="code-display">
+<span class="keyword">static</span> <span class="keyword">int</span> count = <span class="string">0</span>;  <span class="comment">// 只初始化一次，永久存在</span>
+                </div>
+            </div>
+
+            <!-- 场景5: getInstance 工作流程 -->
+            <div class="scene" id="scene5">
+                <h1 class="scene-title">🎯 getInstance() 流程</h1>
+                
+                <div class="animation-stage">
+                    <div class="call-sequence" id="flow-sequence">
+                        <div class="flow-step" id="step1">
+                            <div style="font-size: 40px; margin-bottom: 10px;">📞</div>
+                            调用函数
+                        </div>
+                        <div class="flow-arrow-icon">→</div>
+                        <div class="flow-step" id="step2">
+                            <div style="font-size: 40px; margin-bottom: 10px;">🔍</div>
+                            检查标志
+                        </div>
+                        <div class="flow-arrow-icon">→</div>
+                        <div class="flow-step" id="step3">
+                            <div style="font-size: 40px; margin-bottom: 10px;">⚙️</div>
+                            初始化<br/>(仅一次)
+                        </div>
+                        <div class="flow-arrow-icon">→</div>
+                        <div class="flow-step" id="step4">
+                            <div style="font-size: 40px; margin-bottom: 10px;">📍</div>
+                            返回地址
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-display">
+Printer* <span class="function">getPrinterInstance</span>() {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">static</span> Printer instance;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">static</span> <span class="keyword">int</span> initialized = <span class="string">0</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (!initialized) {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">initPrinter</span>(&instance);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;initialized = <span class="string">1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> &instance;<br/>
+}
+                </div>
+            </div>
+
+            <!-- 场景6: 初始化保护机制 -->
+            <div class="scene" id="scene6">
+                <h1 class="scene-title">🛡️ 初始化保护</h1>
+                
+                <div class="animation-stage">
+                    <div class="call-sequence">
+                        <div class="call-box executed">
+                            <div style="font-size: 24px; font-weight: bold;">第1次调用</div>
+                            <div style="margin: 20px 0; font-size: 18px;">initialized = 0</div>
+                            <div style="font-size: 40px; margin: 15px 0;">✅</div>
+                            <div style="font-size: 16px;">执行初始化</div>
+                        </div>
+                        
+                        <div style="font-size: 40px; color: #667eea;">→</div>
+                        
+                        <div class="call-box skipped">
+                            <div style="font-size: 24px; font-weight: bold;">第2次调用</div>
+                            <div style="margin: 20px 0; font-size: 18px;">initialized = 1</div>
+                            <div style="font-size: 40px; margin: 15px 0;">⏭️</div>
+                            <div style="font-size: 16px;">跳过初始化</div>
+                        </div>
+                        
+                        <div style="font-size: 40px; color: #667eea;">→</div>
+                        
+                        <div class="call-box skipped">
+                            <div style="font-size: 24px; font-weight: bold;">第N次调用</div>
+                            <div style="margin: 20px 0; font-size: 18px;">initialized = 1</div>
+                            <div style="font-size: 40px; margin: 15px 0;">⏭️</div>
+                            <div style="font-size: 16px;">跳过初始化</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <div style="display: inline-block; background: #fef3c7; padding: 25px 40px; border-radius: 15px; border: 3px solid #f59e0b;">
+                        <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">🔒 只初始化一次</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景7: 内存地址演示 -->
+            <div class="scene" id="scene7">
+                <h1 class="scene-title">📍 地址验证</h1>
+                
+                <div class="animation-stage" id="address-stage" style="position: relative;">
+                    <svg id="address-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                    </svg>
+                    <div id="address-objects" style="position: relative; z-index: 2; width: 100%; height: 100%;">
+                        <!-- 对象将在这里生成 -->
+                    </div>
+                </div>
+                
+                <div class="code-display">
+Printer* p1 = <span class="function">getPrinterInstance</span>();<br/>
+Printer* p2 = <span class="function">getPrinterInstance</span>();<br/>
+<br/>
+<span class="comment">// p1 和 p2 指向同一个地址 ✅</span>
+                </div>
+            </div>
+
+            <!-- 场景8: 完整代码 -->
+            <div class="scene" id="scene8">
+                <h1 class="scene-title">📦 完整实现</h1>
+                
+                <div class="code-display">
+<span class="comment">// 结构体定义</span><br/>
+<span class="keyword">typedef</span> <span class="keyword">struct</span> {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> port;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> pageCount;<br/>
+} <span class="type">Printer</span>;<br/>
+<br/>
+<span class="comment">// 单例获取函数</span><br/>
+<span class="type">Printer</span>* <span class="function">getPrinterInstance</span>() {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">static</span> <span class="type">Printer</span> instance;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">static</span> <span class="keyword">int</span> initialized = <span class="string">0</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (!initialized) {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance.port = <span class="string">0x378</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance.pageCount = <span class="string">0</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;initialized = <span class="string">1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> &instance;<br/>
+}<br/>
+<br/>
+<span class="comment">// 使用示例</span><br/>
+<span class="keyword">int</span> <span class="function">main</span>() {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Printer</span>* p1 = <span class="function">getPrinterInstance</span>();<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Printer</span>* p2 = <span class="function">getPrinterInstance</span>();<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// p1 == p2 ✅ 同一个对象</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">0</span>;<br/>
+}
+                </div>
+            </div>
+
+            <!-- 场景9: 应用场景 -->
+            <div class="scene" id="scene9">
+                <h1 class="scene-title">🎓 应用场景</h1>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; padding: 40px;">
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 40px; border-radius: 20px; border: 4px solid #0284c7; text-align: center;">
+                        <div style="font-size: 100px; margin-bottom: 20px;">🖨️</div>
+                        <div style="font-size: 28px; font-weight: bold; color: #0284c7;">硬件管理</div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 40px; border-radius: 20px; border: 4px solid #f59e0b; text-align: center;">
+                        <div style="font-size: 100px; margin-bottom: 20px;">📝</div>
+                        <div style="font-size: 28px; font-weight: bold; color: #f59e0b;">日志系统</div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%); padding: 40px; border-radius: 20px; border: 4px solid #f43f5e; text-align: center;">
+                        <div style="font-size: 100px; margin-bottom: 20px;">⚙️</div>
+                        <div style="font-size: 28px; font-weight: bold; color: #f43f5e;">配置管理</div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 40px; border-radius: 20px; border: 4px solid #22c55e; text-align: center;">
+                        <div style="font-size: 100px; margin-bottom: 20px;">🔌</div>
+                        <div style="font-size: 28px; font-weight: bold; color: #22c55e;">资源池</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; color: white;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+                    <div style="font-size: 32px; font-weight: bold;">单例模式 = 唯一实例 + 全局访问</div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- 控制区域 -->
+        <div class="controls">
+            <button class="btn btn-secondary" id="prevBtn">⬅️ 上一步</button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">1/9</div>
+            <button class="btn btn-primary" id="nextBtn">下一步 ➡️</button>
+            <button class="btn btn-secondary" id="replayBtn">🔄 重播</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 9;
+        
+        function updateScene() {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            
+            document.getElementById(`scene${currentScene}`).classList.add('active');
+            
+            const progress = (currentScene / totalScenes) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentScene}/${totalScenes}`;
+            
+            document.getElementById('prevBtn').disabled = currentScene === 1;
+            document.getElementById('nextBtn').disabled = currentScene === totalScenes;
+            
+            document.querySelector('.content-area').scrollTop = 0;
+            
+            triggerSceneAnimation();
+        }
+        
+        function triggerSceneAnimation() {
+            if (currentScene === 2) {
+                animateProblemScene();
+            } else if (currentScene === 3) {
+                animateSolutionScene();
+            } else if (currentScene === 5) {
+                animateFlowSequence();
+            } else if (currentScene === 7) {
+                animateAddressScene();
+            }
+        }
+        
+        // 场景2：问题演示动画
+        function animateProblemScene() {
+            const stage = document.getElementById('problem-stage');
+            stage.innerHTML = '';
+            
+            // 创建3个程序员
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const person = document.createElement('div');
+                    person.className = 'person';
+                    person.style.left = (50 + i * 250) + 'px';
+                    person.style.top = '50px';
+                    person.innerHTML = `
+                        <div class="person-icon">👨‍💻</div>
+                        <div class="person-label">程序员${String.fromCharCode(65 + i)}</div>
+                    `;
+                    stage.appendChild(person);
+                    
+                    // 每个人创建一个打印机对象
+                    setTimeout(() => {
+                        const obj = document.createElement('div');
+                        obj.className = 'multiple-objects';
+                        obj.textContent = '🖨️';
+                        obj.style.left = (50 + i * 250) + 'px';
+                        obj.style.top = '220px';
+                        stage.appendChild(obj);
+                    }, 500);
+                }, i * 600);
+            }
+            
+            // 显示错误提示
+            setTimeout(() => {
+                const error = document.createElement('div');
+                error.style = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; animation: shake 0.5s infinite;';
+                error.textContent = '💥';
+                stage.appendChild(error);
+            }, 2500);
+        }
+        
+        // 场景3：单例解决方案动画 - 修复箭头
+        function animateSolutionScene() {
+            const container = document.getElementById('solution-objects');
+            const svg = document.getElementById('solution-svg');
+            container.innerHTML = '';
+            svg.innerHTML = '';
+            
+            // 创建单例对象（中心位置）
+            const singleton = document.createElement('div');
+            singleton.className = 'singleton-object pulse';
+            singleton.id = 'singleton-center';
+            singleton.style.cssText = `
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            `;
+            singleton.innerHTML = `
+                <div class="singleton-icon">🖨️</div>
+                <div style="font-size: 20px;">唯一实例</div>
+                <div class="address-label">0x12345678</div>
+            `;
+            container.appendChild(singleton);
+            
+            // 等待DOM渲染完成后创建程序员和箭头
+            setTimeout(() => {
+                const centerRect = singleton.getBoundingClientRect();
+                const stageRect = container.parentElement.getBoundingClientRect();
+                const centerX = centerRect.left + centerRect.width / 2 - stageRect.left;
+                const centerY = centerRect.top + centerRect.height / 2 - stageRect.top;
+                
+                // 创建3个程序员围绕中心
+                const positions = [
+                    { x: 150, y: 150, label: 'A' },
+                    { x: stageRect.width - 250, y: 150, label: 'B' },
+                    { x: stageRect.width / 2 - 50, y: stageRect.height - 200, label: 'C' }
+                ];
+                
+                positions.forEach((pos, index) => {
+                    setTimeout(() => {
+                        // 创建程序员
+                        const person = document.createElement('div');
+                        person.className = 'person fade-in';
+                        person.style.cssText = `
+                            position: absolute;
+                            left: ${pos.x}px;
+                            top: ${pos.y}px;
+                        `;
+                        person.innerHTML = `
+                            <div class="person-icon">👨‍💻</div>
+                            <div class="person-label">程序员${pos.label}</div>
+                        `;
+                        container.appendChild(person);
+                        
+                        // 绘制箭头
+                        setTimeout(() => {
+                            const personRect = person.getBoundingClientRect();
+                            const startX = personRect.left + personRect.width / 2 - stageRect.left;
+                            const startY = personRect.top + personRect.height / 2 - stageRect.top;
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('class', 'arrow-line');
+                            line.setAttribute('x1', startX);
+                            line.setAttribute('y1', startY);
+                            line.setAttribute('x2', centerX);
+                            line.setAttribute('y2', centerY);
+                            svg.appendChild(line);
+                        }, 300);
+                    }, index * 400);
+                });
+            }, 500);
+        }
+        
+        // 场景5：流程动画
+        function animateFlowSequence() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    document.getElementById(step).classList.add('active');
+                    setTimeout(() => {
+                        document.getElementById(step).classList.remove('active');
+                    }, 800);
+                }, index * 1000);
+            });
+        }
+        
+        // 场景7：地址演示动画 - 修复箭头
+        function animateAddressScene() {
+            const container = document.getElementById('address-objects');
+            const svg = document.getElementById('address-svg');
+            container.innerHTML = '';
+            svg.innerHTML = '';
+            
+            // 创建唯一实例（中心偏上）
+            const instance = document.createElement('div');
+            instance.className = 'singleton-object';
+            instance.id = 'instance-center';
+            instance.style.cssText = `
+                position: absolute;
+                left: 50%;
+                top: 30%;
+                transform: translate(-50%, -50%);
+            `;
+            instance.innerHTML = `
+                <div class="singleton-icon">🖨️</div>
+                <div style="font-size: 18px;">instance</div>
+                <div class="address-label">0x00401000</div>
+            `;
+            container.appendChild(instance);
+            
+            // 等待DOM渲染完成后创建指针和箭头
+            setTimeout(() => {
+                const instanceRect = instance.getBoundingClientRect();
+                const stageRect = container.parentElement.getBoundingClientRect();
+                const targetX = instanceRect.left + instanceRect.width / 2 - stageRect.left;
+                const targetY = instanceRect.bottom - stageRect.top;
+                
+                // 创建两个指针
+                ['p1', 'p2'].forEach((name, index) => {
+                    setTimeout(() => {
+                        const pointer = document.createElement('div');
+                        pointer.className = 'fade-in';
+                        const xPos = 25 + index * 50;
+                        pointer.style.cssText = `
+                            position: absolute;
+                            left: ${xPos}%;
+                            top: 70%;
+                            transform: translate(-50%, 0);
+                            text-align: center;
+                        `;
+                        pointer.innerHTML = `
+                            <div style="font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 10px;">${name}</div>
+                            <div style="font-size: 40px;">👇</div>
+                            <div class="address-label">0x00401000</div>
+                        `;
+                        container.appendChild(pointer);
+                        
+                        // 绘制箭头
+                        setTimeout(() => {
+                            const pointerRect = pointer.getBoundingClientRect();
+                            const startX = pointerRect.left + pointerRect.width / 2 - stageRect.left;
+                            const startY = pointerRect.top - stageRect.top;
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('class', 'arrow-line');
+                            line.setAttribute('x1', startX);
+                            line.setAttribute('y1', startY);
+                            line.setAttribute('x2', targetX);
+                            line.setAttribute('y2', targetY);
+                            svg.appendChild(line);
+                        }, 300);
+                    }, index * 600);
+                });
+                
+                // 显示相等标志
+                setTimeout(() => {
+                    const equal = document.createElement('div');
+                    equal.className = 'fade-in';
+                    equal.style.cssText = `
+                        position: absolute;
+                        left: 50%;
+                        bottom: 30px;
+                        transform: translateX(-50%);
+                        background: #22c55e;
+                        color: white;
+                        padding: 15px 40px;
+                        border-radius: 25px;
+                        font-size: 24px;
+                        font-weight: bold;
+                    `;
+                    equal.textContent = 'p1 == p2 ✅';
+                    container.appendChild(equal);
+                }, 1500);
+            }, 500);
+        }
+        
+        // 按钮事件
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentScene < totalScenes) {
+                currentScene++;
+                updateScene();
+            }
+        });
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentScene > 1) {
+                currentScene--;
+                updateScene();
+            }
+        });
+        
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            currentScene = 1;
+            updateScene();
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowRight') {
+                e.preventDefault();
+                if (currentScene < totalScenes) {
+                    currentScene++;
+                    updateScene();
+                }
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentScene > 1) {
+                    currentScene--;
+                    updateScene();
+                }
+            }
+        });
+        
+        // 初始化
+        updateScene();
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "id": "conv-1786669467851-ptqc169j9",
+  "providerId": "claude",
+  "title": "Ingest raw material into Obsidian wiki",
+  "titleGenerationStatus": "success",
+  "createdAt": 1786669467856,
+  "updatedAt": 1786685042461,
+  "lastResponseAt": 1786670382462,
+  "sessionId": "e2ec1a5c-7ef9-430a-a7d6-0ca46a6762df",
+  "selectedModel": "haiku",
+  "providerState": {
+    "providerSessionId": "e2ec1a5c-7ef9-430a-a7d6-0ca46a6762df"
+  },
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 220,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 96512,
+    "contextWindow": 200000,
+    "contextWindowIsAuthoritative": true,
+    "contextTokens": 96732,
+    "percentage": 48
+  }
+}

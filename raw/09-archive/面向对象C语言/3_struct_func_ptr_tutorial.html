@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结构体函数指针教学动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .scene {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: calc(100vh - 120px);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .scene-title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .visual-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            margin: 30px 0;
+        }
+        
+        /* 场景1: 生活比喻 */
+        .remote-control {
+            width: 200px;
+            height: 320px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .remote-screen {
+            width: 100%;
+            height: 60px;
+            background: #3498db;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .remote-button {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .remote-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+        
+        .tv {
+            width: 300px;
+            height: 200px;
+            background: #2c3e50;
+            border-radius: 10px;
+            margin-left: 50px;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .tv-screen {
+            width: 100%;
+            height: 100%;
+            background: #34495e;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .arrow-connection {
+            width: 50px;
+            height: 3px;
+            background: #f39c12;
+            position: relative;
+        }
+        
+        .arrow-connection::after {
+            content: '▶';
+            position: absolute;
+            right: -10px;
+            top: -9px;
+            color: #f39c12;
+            font-size: 1.5em;
+        }
+        
+        /* 场景2: 结构体可视化 */
+        .struct-box {
+            border: 4px solid #3498db;
+            border-radius: 15px;
+            padding: 30px;
+            background: #ecf0f1;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+        }
+        
+        .struct-member {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #2ecc71;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .struct-member:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .member-type {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .member-name {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+        
+        /* 场景3: 函数指针 */
+        .func-pointer-demo {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .pointer-box {
+            background: linear-gradient(145deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.4);
+            font-weight: bold;
+        }
+        
+        .function-box {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            font-size: 1.5em;
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.4);
+            font-weight: bold;
+        }
+        
+        /* 代码块样式 */
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1.1em;
+            line-height: 1.8;
+            overflow: auto;
+            max-height: 40vh;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .keyword { color: #e74c3c; font-weight: bold; }
+        .type { color: #3498db; font-weight: bold; }
+        .function { color: #f39c12; font-weight: bold; }
+        .comment { color: #95a5a6; font-style: italic; }
+        .string { color: #2ecc71; }
+        
+        /* 场景5: 初始化动画 */
+        .init-animation {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .struct-instance {
+            background: #ecf0f1;
+            border: 4px solid #3498db;
+            border-radius: 15px;
+            padding: 25px;
+            min-width: 400px;
+        }
+        
+        .member-slot {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #95a5a6;
+            transition: all 0.5s;
+        }
+        
+        .member-slot.filled {
+            border-left-color: #2ecc71;
+            background: #d5f4e6;
+        }
+        
+        .value-pill {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s;
+        }
+        
+        .value-pill.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* 场景6: 调用演示 */
+        .call-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .call-expression {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 1.8em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .execution-flow {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .flow-step {
+            background: white;
+            border: 3px solid #3498db;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s;
+        }
+        
+        .flow-step.active {
+            opacity: 1;
+            transform: scale(1);
+            border-color: #2ecc71;
+            background: #d5f4e6;
+        }
+        
+        .flow-arrow {
+            font-size: 2em;
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        /* 场景7: 完整示例 */
+        .complete-example {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .example-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        /* 场景8: OOP总结 */
+        .oop-comparison {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+        
+        .comparison-box {
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .comparison-title {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .comparison-content {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            border: 3px solid #3498db;
+            border-top: none;
+        }
+        
+        .comparison-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #ecf0f1;
+            border-radius: 8px;
+            border-left: 5px solid #2ecc71;
+        }
+        
+        /* 控制面板 */
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(44, 62, 80, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-prev {
+            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+        
+        .btn-next {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-replay {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-info {
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 0 20px;
+        }
+        
+        /* 提示框 */
+        .tooltip {
+            position: absolute;
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .has-tooltip:hover + .tooltip {
+            opacity: 1;
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(52, 152, 219, 0.8); }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .animate-glow {
+            animation: glow 2s infinite;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1600px) {
+            .scene-title { font-size: 2em; }
+            .code-block { font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 场景1: 开场引入 -->
+        <div class="scene active" id="scene1">
+            <h1 class="scene-title">🎮 生活中的"遥控器"</h1>
+            <div class="visual-area">
+                <div class="remote-control">
+                    <div class="remote-screen" id="remoteScreen">OFF</div>
+                    <div class="remote-button" onclick="pressButton('ON')">开机</div>
+                    <div class="remote-button" onclick="pressButton('CH+')">换台</div>
+                    <div class="remote-button" onclick="pressButton('VOL+')">音量+</div>
+                </div>
+                <div class="arrow-connection"></div>
+                <div class="tv">
+                    <div class="tv-screen" id="tvScreen">📺</div>
+                </div>
+            </div>
+            <div style="text-align: center; font-size: 1.3em; color: #2c3e50; margin-top: 30px; line-height: 1.8;">
+                <p>💡 <strong>思考:</strong> 遥控器上的按钮 = 函数指针</p>
+                <p>📦 遥控器本身 = 结构体</p>
+                <p>🎯 按下按钮触发动作 = 调用函数</p>
+            </div>
+        </div>
+
+        <!-- 场景2: 结构体回顾 -->
+        <div class="scene" id="scene2">
+            <h1 class="scene-title">📦 结构体基础回顾</h1>
+            <div class="visual-area">
+                <div class="struct-box">
+                    <h2 style="color: #3498db; margin-bottom: 20px;">struct Student</h2>
+                    <div class="struct-member">
+                        <span class="member-type">char</span>
+                        <span class="member-name">name[20]</span>
+                        <span style="color: #95a5a6; margin-left: 20px;">// 姓名</span>
+                    </div>
+                    <div class="struct-member">
+                        <span class="member-type">int</span>
+                        <span class="member-name">age</span>
+                        <span style="color: #95a5a6; margin-left: 20px;">// 年龄</span>
+                    </div>
+                    <div class="struct-member">
+                        <span class="member-type">float</span>
+                        <span class="member-name">score</span>
+                        <span style="color: #95a5a6; margin-left: 20px;">// 分数</span>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; font-size: 1.3em; color: #2c3e50; margin-top: 30px;">
+                <p>✅ 结构体就像一个"容器",可以装<strong>不同类型</strong>的数据</p>
+                <p>🤔 那能不能装"函数"呢?</p>
+            </div>
+        </div>
+
+        <!-- 场景3: 函数指针讲解 -->
+        <div class="scene" id="scene3">
+            <h1 class="scene-title">🎯 函数指针是什么?</h1>
+            <div class="visual-area">
+                <div class="func-pointer-demo">
+                    <div class="pointer-box">
+                        指针变量<br>
+                        func_ptr<br>
+                        <span style="font-size: 0.8em;">存储地址: 0x1000</span>
+                    </div>
+                    <div class="arrow-connection"></div>
+                    <div class="function-box">
+                        函数代码<br>
+                        void print() {...}<br>
+                        <span style="font-size: 0.8em;">地址: 0x1000</span>
+                    </div>
+                </div>
+            </div>
+            <div class="code-block" style="margin: 30px auto; max-width: 800px;">
+<span class="comment">// 1. 定义一个普通函数</span><br>
+<span class="keyword">void</span> <span class="function">sayHello</span>() {<br>
+    printf(<span class="string">"Hello!\n"</span>);<br>
+}<br>
+<br>
+<span class="comment">// 2. 声明函数指针(指向返回void,无参数的函数)</span><br>
+<span class="keyword">void</span> (*func_ptr)();<br>
+<br>
+<span class="comment">// 3. 让指针指向函数</span><br>
+func_ptr = sayHello;<br>
+<br>
+<span class="comment">// 4. 通过指针调用函数</span><br>
+func_ptr();  <span class="comment">// 等同于 sayHello();</span>
+            </div>
+            <div style="text-align: center; font-size: 1.3em; color: #2c3e50; margin-top: 20px;">
+                <p>💡 函数指针就是"指向函数的指针",存储函数的<strong>地址</strong></p>
+            </div>
+        </div>
+
+        <!-- 场景4: 结构体中定义函数指针 -->
+        <div class="scene" id="scene4">
+            <h1 class="scene-title">🔧 在结构体中定义函数指针</h1>
+            <div class="visual-area">
+                <div class="struct-box" style="max-width: 900px;">
+                    <h2 style="color: #3498db; margin-bottom: 20px;">struct Dog</h2>
+                    <div class="struct-member">
+                        <span class="member-type">char</span>
+                        <span class="member-name">name[20]</span>
+                        <span style="color: #95a5a6;">// 普通数据成员</span>
+                    </div>
+                    <div class="struct-member">
+                        <span class="member-type">int</span>
+                        <span class="member-name">age</span>
+                        <span style="color: #95a5a6;">// 普通数据成员</span>
+                    </div>
+                    <div class="struct-member animate-pulse" style="border-left-color: #e74c3c; background: #fee;">
+                        <span class="member-type">void</span>
+                        <span style="color: #e74c3c;">(</span><span class="member-name" style="color: #e74c3c;">*bark</span><span style="color: #e74c3c;">)()</span>
+                        <span style="color: #e74c3c; margin-left: 20px;">// 函数指针成员!</span>
+                    </div>
+                    <div class="struct-member animate-pulse" style="border-left-color: #e74c3c; background: #fee;">
+                        <span class="member-type">void</span>
+                        <span style="color: #e74c3c;">(</span><span class="member-name" style="color: #e74c3c;">*eat</span><span style="color: #e74c3c;">)(</span><span class="type">char*</span><span style="color: #e74c3c;">)</span>
+                        <span style="color: #e74c3c; margin-left: 20px;">// 带参数的函数指针!</span>
+                    </div>
+                </div>
+            </div>
+            <div class="code-block" style="margin: 30px auto; max-width: 800px;">
+<span class="keyword">struct</span> <span class="type">Dog</span> {<br>
+    <span class="comment">// 数据成员</span><br>
+    <span class="keyword">char</span> name[<span class="string">20</span>];<br>
+    <span class="keyword">int</span> age;<br>
+    <br>
+    <span class="comment">// 函数指针成员(无参数)</span><br>
+    <span class="keyword">void</span> (*bark)();<br>
+    <br>
+    <span class="comment">// 函数指针成员(带参数)</span><br>
+    <span class="keyword">void</span> (*eat)(<span class="keyword">char</span>* food);<br>
+};
+            </div>
+            <div style="text-align: center; font-size: 1.3em; color: #2c3e50; margin-top: 20px;">
+                <p>🎯 关键: 函数指针的<strong>语法格式</strong> 是 <code style="background: #ecf0f1; padding: 5px 10px; border-radius: 5px;">返回类型 (*指针名)(参数类型)</code></p>
+            </div>
+        </div>
+
+        <!-- 场景5: 初始化演示 -->
+        <div class="scene" id="scene5">
+            <h1 class="scene-title">⚙️ 初始化函数指针成员</h1>
+            <div class="visual-area">
+                <div class="init-animation">
+                    <div class="code-block" style="max-width: 700px;">
+<span class="comment">// 先定义实际的函数</span><br>
+<span class="keyword">void</span> <span class="function">dog_bark</span>() {<br>
+    printf(<span class="string">"汪汪汪!\n"</span>);<br>
+}<br>
+<br>
+<span class="keyword">void</span> <span class="function">dog_eat</span>(<span class="keyword">char</span>* food) {<br>
+    printf(<span class="string">"正在吃 %s\n"</span>, food);<br>
+}
+                    </div>
+                    
+                    <div class="struct-instance">
+                        <h3 style="color: #3498db; margin-bottom: 15px;">struct Dog myDog;</h3>
+                        <div class="member-slot" id="slot1">
+                            <span><strong>name:</strong></span>
+                            <div class="value-pill">"旺财"</div>
+                        </div>
+                        <div class="member-slot" id="slot2">
+                            <span><strong>age:</strong></span>
+                            <div class="value-pill">3</div>
+                        </div>
+                        <div class="member-slot" id="slot3">
+                            <span><strong>bark:</strong></span>
+                            <div class="value-pill">→ dog_bark</div>
+                        </div>
+                        <div class="member-slot" id="slot4">
+                            <span><strong>eat:</strong></span>
+                            <div class="value-pill">→ dog_eat</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-next" onclick="animateInit()" style="margin-top: 20px;">▶️ 开始初始化</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 场景6: 调用演示 -->
+        <div class="scene" id="scene6">
+            <h1 class="scene-title">🚀 调用函数指针</h1>
+            <div class="visual-area">
+                <div class="call-demo">
+                    <div class="call-expression">
+                        myDog.bark();
+                    </div>
+                    
+                    <div class="execution-flow">
+                        <div class="flow-step" id="step1">1. 找到 myDog</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step" id="step2">2. 读取 bark 成员</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step" id="step3">3. 跳转到 dog_bark</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step" id="step4">4. 执行函数</div>
+                    </div>
+                    
+                    <div style="background: #d5f4e6; padding: 30px; border-radius: 15px; margin-top: 30px; border: 3px solid #2ecc71;">
+                        <div style="font-size: 2em; text-align: center; margin-bottom: 20px;">🔊 输出结果:</div>
+                        <div id="output" style="font-size: 1.5em; color: #27ae60; font-weight: bold; text-align: center; min-height: 40px;"></div>
+                    </div>
+                    
+                    <button class="btn btn-next" onclick="animateCall()" style="margin-top: 20px;">▶️ 演示调用过程</button>
+                </div>
+            </div>
+            
+            <div class="code-block" style="margin: 30px auto; max-width: 800px;">
+<span class="comment">// 两种调用方式都可以:</span><br>
+<br>
+<span class="comment">// 方式1: 直接调用(推荐)</span><br>
+myDog.<span class="function">bark</span>();<br>
+myDog.<span class="function">eat</span>(<span class="string">"骨头"</span>);<br>
+<br>
+<span class="comment">// 方式2: 显式解引用</span><br>
+(*myDog.bark)();<br>
+(*myDog.eat)(<span class="string">"骨头"</span>);
+            </div>
+        </div>
+
+        <!-- 场景7: 完整示例 -->
+        <div class="scene" id="scene7">
+            <h1 class="scene-title">📝 完整代码示例</h1>
+            <div class="complete-example" style="max-width: 1400px; margin: 0 auto;">
+                <div class="example-section">
+                    <div class="section-title">1️⃣ 定义结构体和函数</div>
+                    <div class="code-block">
+<span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span><br>
+<span class="keyword">#include</span> <span class="string">&lt;string.h&gt;</span><br>
+<br>
+<span class="comment">// 定义函数</span><br>
+<span class="keyword">void</span> <span class="function">dog_bark</span>() {<br>
+    printf(<span class="string">"汪汪汪!\n"</span>);<br>
+}<br>
+<br>
+<span class="keyword">void</span> <span class="function">dog_eat</span>(<span class="keyword">char</span>* food) {<br>
+    printf(<span class="string">"吃%s\n"</span>, food);<br>
+}<br>
+<br>
+<span class="comment">// 定义结构体</span><br>
+<span class="keyword">struct</span> <span class="type">Dog</span> {<br>
+    <span class="keyword">char</span> name[<span class="string">20</span>];<br>
+    <span class="keyword">int</span> age;<br>
+    <span class="keyword">void</span> (*bark)();<br>
+    <span class="keyword">void</span> (*eat)(<span class="keyword">char</span>*);<br>
+};
+                    </div>
+                </div>
+                
+                <div class="example-section">
+                    <div class="section-title">2️⃣ 使用示例</div>
+                    <div class="code-block">
+<span class="keyword">int</span> <span class="function">main</span>() {<br>
+    <span class="comment">// 创建实例</span><br>
+    <span class="keyword">struct</span> <span class="type">Dog</span> myDog;<br>
+    <br>
+    <span class="comment">// 初始化数据</span><br>
+    strcpy(myDog.name, <span class="string">"旺财"</span>);<br>
+    myDog.age = <span class="string">3</span>;<br>
+    <br>
+    <span class="comment">// 初始化函数指针</span><br>
+    myDog.bark = dog_bark;<br>
+    myDog.eat = dog_eat;<br>
+    <br>
+    <span class="comment">// 调用函数</span><br>
+    printf(<span class="string">"%s: "</span>, myDog.name);<br>
+    myDog.<span class="function">bark</span>();<br>
+    myDog.<span class="function">eat</span>(<span class="string">"骨头"</span>);<br>
+    <br>
+    <span class="keyword">return</span> <span class="string">0</span>;<br>
+}<br>
+<br>
+<span class="comment">/* 输出:<br>
+   旺财: 汪汪汪!<br>
+   吃骨头<br>
+*/</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 场景8: OOP思想总结 -->
+        <div class="scene" id="scene8">
+            <h1 class="scene-title">🎓 面向对象思想</h1>
+            <div class="visual-area">
+                <div class="oop-comparison">
+                    <div class="comparison-box">
+                        <div class="comparison-title" style="background: linear-gradient(145deg, #e74c3c, #c0392b);">
+                            传统C语言
+                        </div>
+                        <div class="comparison-content">
+                            <div class="comparison-item">
+                                <strong>数据:</strong> 全局变量分散
+                            </div>
+                            <div class="comparison-item">
+                                <strong>函数:</strong> 独立定义,与数据分离
+                            </div>
+                            <div class="comparison-item">
+                                <strong>调用:</strong> function(data)
+                            </div>
+                            <div class="comparison-item" style="border-left-color: #e74c3c;">
+                                ❌ 数据和行为分离
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-box">
+                        <div class="comparison-title" style="background: linear-gradient(145deg, #2ecc71, #27ae60);">
+                            结构体+函数指针
+                        </div>
+                        <div class="comparison-content">
+                            <div class="comparison-item">
+                                <strong>数据:</strong> 封装在结构体内
+                            </div>
+                            <div class="comparison-item">
+                                <strong>函数:</strong> 通过函数指针关联
+                            </div>
+                            <div class="comparison-item">
+                                <strong>调用:</strong> object.method()
+                            </div>
+                            <div class="comparison-item" style="border-left-color: #2ecc71;">
+                                ✅ 数据和行为封装在一起
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 40px; background: linear-gradient(145deg, #667eea, #764ba2); padding: 30px; border-radius: 15px; color: white;">
+                <h2 style="text-align: center; font-size: 2em; margin-bottom: 20px;">💡 核心理念</h2>
+                <div style="font-size: 1.3em; line-height: 2; text-align: center;">
+                    <p>📦 <strong>结构体</strong> = 类(Class)</p>
+                    <p>🎯 <strong>函数指针成员</strong> = 方法(Method)</p>
+                    <p>🚀 <strong>结构体实例</strong> = 对象(Object)</p>
+                    <p style="margin-top: 20px; font-size: 1.2em; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+                        这就是 C 语言模拟面向对象编程的基础!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="controls">
+        <button class="btn btn-prev" onclick="prevScene()">◀ 上一步</button>
+        <div class="progress-info">
+            <span id="progress">场景 1/8</span>
+        </div>
+        <button class="btn btn-replay" onclick="replayScene()">🔄 重播</button>
+        <button class="btn btn-next" onclick="nextScene()">下一步 ▶</button>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 8;
+
+        function updateScene() {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            document.getElementById(`scene${currentScene}`).classList.add('active');
+            document.getElementById('progress').textContent = `场景 ${currentScene}/${totalScenes}`;
+            
+            // 更新按钮状态
+            document.querySelector('.btn-prev').disabled = currentScene === 1;
+            document.querySelector('.btn-next').disabled = currentScene === totalScenes;
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                currentScene++;
+                updateScene();
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 1) {
+                currentScene--;
+                updateScene();
+            }
+        }
+
+        function replayScene() {
+            // 重新加载当前场景的动画
+            const scene = document.getElementById(`scene${currentScene}`);
+            scene.style.animation = 'none';
+            setTimeout(() => {
+                scene.style.animation = 'fadeIn 0.5s ease-in';
+            }, 10);
+            
+            // 如果是场景5或6,重置动画状态
+            if (currentScene === 5) {
+                resetInitAnimation();
+            } else if (currentScene === 6) {
+                resetCallAnimation();
+            }
+        }
+
+        // 场景1: 遥控器交互
+        function pressButton(action) {
+            const screen = document.getElementById('remoteScreen');
+            const tvScreen = document.getElementById('tvScreen');
+            
+            switch(action) {
+                case 'ON':
+                    screen.textContent = 'ON';
+                    tvScreen.textContent = '📺 开机中...';
+                    setTimeout(() => {
+                        tvScreen.textContent = '🎬 频道1';
+                    }, 1000);
+                    break;
+                case 'CH+':
+                    screen.textContent = 'CH+';
+                    tvScreen.textContent = '🎬 频道2';
+                    break;
+                case 'VOL+':
+                    screen.textContent = 'VOL+';
+                    tvScreen.textContent = '🔊 音量增加';
+                    break;
+            }
+        }
+
+        // 场景5: 初始化动画
+        function animateInit() {
+            const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
+            slots.forEach((slotId, index) => {
+                setTimeout(() => {
+                    const slot = document.getElementById(slotId);
+                    slot.classList.add('filled');
+                    slot.querySelector('.value-pill').classList.add('show');
+                }, index * 500);
+            });
+        }
+
+        function resetInitAnimation() {
+            const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
+            slots.forEach(slotId => {
+                const slot = document.getElementById(slotId);
+                slot.classList.remove('filled');
+                slot.querySelector('.value-pill').classList.remove('show');
+            });
+        }
+
+        // 场景6: 调用动画
+        function animateCall() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            const output = document.getElementById('output');
+            output.textContent = '';
+            
+            // 重置所有步骤
+            steps.forEach(stepId => {
+                document.getElementById(stepId).classList.remove('active');
+            });
+            
+            // 依次激活步骤
+            steps.forEach((stepId, index) => {
+                setTimeout(() => {
+                    document.getElementById(stepId).classList.add('active');
+                    if (index === steps.length - 1) {
+                        setTimeout(() => {
+                            output.textContent = '汪汪汪! 🐕';
+                        }, 300);
+                    }
+                }, index * 800);
+            });
+        }
+
+        function resetCallAnimation() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            steps.forEach(stepId => {
+                document.getElementById(stepId).classList.remove('active');
+            });
+            document.getElementById('output').textContent = '';
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevScene();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                replayScene();
+            }
+        });
+
+        // 初始化
+        updateScene();
+    </script>
+</body>
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>不透明指针与接口封装</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            height: calc(100vh - 80px);
+            padding: 20px;
+        }
+        
+        .scene {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: calc(100vh - 120px);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #764ba2;
+            margin: 30px 0 20px 0;
+            font-size: 1.8em;
+        }
+        
+        .visual-demo {
+            display: flex;
+            gap: 30px;
+            margin: 30px 0;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .file-box {
+            flex: 1;
+            min-width: 350px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .file-box:hover {
+            transform: translateY(-10px);
+        }
+        
+        .file-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .file-label {
+            text-align: center;
+            font-size: 1.3em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.8;
+            overflow-x: auto;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        
+        .code-block .keyword {
+            color: #fc6b6b;
+            font-weight: bold;
+        }
+        
+        .code-block .type {
+            color: #4fd1c5;
+        }
+        
+        .code-block .function {
+            color: #ffc107;
+        }
+        
+        .code-block .string {
+            color: #9ae6b4;
+        }
+        
+        .code-block .comment {
+            color: #718096;
+            font-style: italic;
+        }
+        
+        .arrow {
+            font-size: 3em;
+            color: #667eea;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #ff7675 0%, #ff6348 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(255,99,71,0.3);
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .success-box {
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,184,148,0.3);
+        }
+        
+        .big-icon {
+            font-size: 8em;
+            text-align: center;
+            margin: 30px 0;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .controls {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .progress {
+            flex: 1;
+            max-width: 400px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        .memory-viz {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .memory-block {
+            background: #e3f2fd;
+            border: 4px solid #2196f3;
+            padding: 30px;
+            border-radius: 15px;
+            min-width: 180px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .memory-block:hover {
+            background: #bbdefb;
+            transform: scale(1.1);
+        }
+        
+        .memory-block .label {
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .memory-block .value {
+            font-family: monospace;
+            font-size: 1.5em;
+            color: #0d47a1;
+            font-weight: bold;
+        }
+        
+        .comparison-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .bad-side {
+            background: linear-gradient(135deg, #ffcccc 0%, #ff9999 100%);
+            border: 4px solid #ff3333;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .good-side {
+            background: linear-gradient(135deg, #ccffcc 0%, #99ff99 100%);
+            border: 4px solid #33cc33;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .side-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .lifecycle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .lifecycle-step {
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            min-width: 180px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .lifecycle-step:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.15);
+        }
+        
+        .step-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .step-text {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .key-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .point-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            text-align: center;
+        }
+        
+        .point-card:hover {
+            border-color: #667eea;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(102,126,234,0.3);
+        }
+        
+        .point-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+        
+        .point-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .mystery-box {
+            background: linear-gradient(135deg, #a8e6cf 0%, #56cc9d 100%);
+            border: 5px dashed #00b894;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .mystery-icon {
+            font-size: 10em;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-split {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                height: auto;
+                padding: 15px 10px;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .scene {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-area">
+            <!-- 场景1: 欢迎页 -->
+            <div class="scene active" id="scene1">
+                <h1>🎓 面向对象C语言</h1>
+                <h1>不透明指针与接口封装</h1>
+                
+                <div class="big-icon">🍽️</div>
+                
+                <div class="mystery-box">
+                    <h2 style="color: #00b894; font-size: 2em;">菜单 vs 后厨配方</h2>
+                </div>
+            </div>
+
+            <!-- 场景2: 问题场景 -->
+            <div class="scene" id="scene2">
+                <h1>❌ 反面教材</h1>
+                
+                <div class="warning-box">
+                    ⚠️ 结构体定义放在头文件
+                </div>
+                
+                <div class="comparison-split">
+                    <div class="bad-side">
+                        <div class="side-title">❌ 不好的做法</div>
+                        <div class="code-block">
+<span class="comment">// door.h</span><br>
+<span class="keyword">typedef struct</span> {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> password;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> open_count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">bool</span> is_locked;<br>
+} <span class="type">Door</span>;<br>
+<br>
+<span class="comment">// 用户可以直接访问:</span><br>
+Door door;<br>
+door.password = <span class="string">9999</span>;
+                        </div>
+                    </div>
+                    
+                    <div class="good-side">
+                        <div class="side-title">✅ 正确做法</div>
+                        <div class="code-block">
+<span class="comment">// door.h</span><br>
+<span class="keyword">typedef struct</span> <span class="type">Door</span> <span class="type">Door</span>;<br>
+<br>
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> pwd);<br>
+<span class="type">bool</span> <span class="function">door_open</span>(<span class="type">Door</span>* d, <span class="type">int</span> pwd);
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景3: 文件分离 -->
+            <div class="scene" id="scene3">
+                <h1>📂 .h 和 .c 分离</h1>
+                
+                <div class="visual-demo">
+                    <div class="file-box">
+                        <div class="file-header">📄 door.h</div>
+                        <div class="file-label">接口声明</div>
+                        <div class="code-block">
+<span class="keyword">#ifndef</span> DOOR_H<br>
+<span class="keyword">#define</span> DOOR_H<br>
+<br>
+<span class="keyword">typedef struct</span> <span class="type">Door</span> <span class="type">Door</span>;<br>
+<br>
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> password);<br>
+<span class="type">bool</span> <span class="function">door_open</span>(<span class="type">Door</span>* d, <span class="type">int</span> pwd);<br>
+<span class="type">void</span> <span class="function">door_destroy</span>(<span class="type">Door</span>* d);<br>
+<br>
+<span class="keyword">#endif</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arrow">➡️</div>
+                    
+                    <div class="file-box">
+                        <div class="file-header">📄 door.c</div>
+                        <div class="file-label">具体实现</div>
+                        <div class="code-block">
+<span class="keyword">#include</span> <span class="string">"door.h"</span><br>
+<br>
+<span class="keyword">struct</span> <span class="type">Door</span> {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> password;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> open_count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">bool</span> is_locked;<br>
+};<br>
+<br>
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> pwd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// 实现...</span><br>
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景4: 不透明指针 -->
+            <div class="scene" id="scene4">
+                <h1>🔍 不透明指针</h1>
+                
+                <div class="mystery-box">
+                    <div class="mystery-icon">📦</div>
+                    <h2 style="color: #00b894; font-size: 2.5em;">前向声明 + 指针</h2>
+                </div>
+                
+                <div class="code-block" style="font-size: 18px;">
+<span class="keyword">typedef struct</span> <span class="type">Door</span> <span class="type">Door</span>;&nbsp;&nbsp;<span class="comment">// 前向声明</span>
+                </div>
+                
+                <h2 style="text-align: center; margin-top: 50px;">为什么指针就够了？</h2>
+                
+                <div class="memory-viz">
+                    <div class="memory-block">
+                        <div class="label">32位</div>
+                        <div class="value">4 字节</div>
+                    </div>
+                    <div class="memory-block">
+                        <div class="label">64位</div>
+                        <div class="value">8 字节</div>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    指针大小固定!
+                </div>
+            </div>
+
+            <!-- 场景5: 接口设计 -->
+            <div class="scene" id="scene5">
+                <h1>🎨 接口设计</h1>
+                
+                <div class="lifecycle">
+                    <div class="lifecycle-step">
+                        <div class="step-icon">🏗️</div>
+                        <div class="step-text">Create</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="lifecycle-step">
+                        <div class="step-icon">⚙️</div>
+                        <div class="step-text">Operate</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="lifecycle-step">
+                        <div class="step-icon">🗑️</div>
+                        <div class="step-text">Destroy</div>
+                    </div>
+                </div>
+                
+                <h2>创建函数</h2>
+                <div class="code-block">
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> password) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Door</span>* d = malloc(<span class="keyword">sizeof</span>(<span class="type">Door</span>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;password = password;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;open_count = <span class="string">0</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;is_locked = <span class="string">true</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> d;<br>
+}
+                </div>
+                
+                <h2>操作函数</h2>
+                <div class="code-block">
+<span class="type">bool</span> <span class="function">door_open</span>(<span class="type">Door</span>* d, <span class="type">int</span> pwd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (d-&gt;password == pwd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;is_locked = <span class="string">false</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;open_count++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">true</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">false</span>;<br>
+}
+                </div>
+                
+                <h2>销毁函数</h2>
+                <div class="code-block">
+<span class="type">void</span> <span class="function">door_destroy</span>(<span class="type">Door</span>* d) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;free(d);<br>
+}
+                </div>
+            </div>
+
+            <!-- 场景6: 完整代码 -->
+            <div class="scene" id="scene6">
+                <h1>💻 完整代码</h1>
+                
+                <div class="file-box" style="margin-bottom: 20px;">
+                    <div class="file-header">📄 door.h</div>
+                    <div class="code-block">
+<span class="keyword">#ifndef</span> DOOR_H<br>
+<span class="keyword">#define</span> DOOR_H<br>
+<span class="keyword">#include</span> &lt;stdbool.h&gt;<br>
+<br>
+<span class="keyword">typedef struct</span> <span class="type">Door</span> <span class="type">Door</span>;<br>
+<br>
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> password);<br>
+<span class="type">bool</span> <span class="function">door_open</span>(<span class="type">Door</span>* d, <span class="type">int</span> pwd);<br>
+<span class="type">void</span> <span class="function">door_close</span>(<span class="type">Door</span>* d);<br>
+<span class="type">void</span> <span class="function">door_destroy</span>(<span class="type">Door</span>* d);<br>
+<br>
+<span class="keyword">#endif</span>
+                    </div>
+                </div>
+                
+                <div class="file-box" style="margin-bottom: 20px;">
+                    <div class="file-header">📄 door.c</div>
+                    <div class="code-block">
+<span class="keyword">#include</span> <span class="string">"door.h"</span><br>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;<br>
+<br>
+<span class="keyword">struct</span> <span class="type">Door</span> {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> password;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> open_count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">bool</span> is_locked;<br>
+};<br>
+<br>
+<span class="type">Door</span>* <span class="function">door_create</span>(<span class="type">int</span> password) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Door</span>* d = malloc(<span class="keyword">sizeof</span>(<span class="type">Door</span>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;password = password;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;open_count = <span class="string">0</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;is_locked = <span class="string">true</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> d;<br>
+}<br>
+<br>
+<span class="type">bool</span> <span class="function">door_open</span>(<span class="type">Door</span>* d, <span class="type">int</span> pwd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (d-&gt;password == pwd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;is_locked = <span class="string">false</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;open_count++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">true</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">false</span>;<br>
+}<br>
+<br>
+<span class="type">void</span> <span class="function">door_close</span>(<span class="type">Door</span>* d) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;d-&gt;is_locked = <span class="string">true</span>;<br>
+}<br>
+<br>
+<span class="type">void</span> <span class="function">door_destroy</span>(<span class="type">Door</span>* d) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;free(d);<br>
+}
+                    </div>
+                </div>
+                
+                <div class="file-box">
+                    <div class="file-header">📄 main.c</div>
+                    <div class="code-block">
+<span class="keyword">#include</span> <span class="string">"door.h"</span><br>
+<span class="keyword">#include</span> &lt;stdio.h&gt;<br>
+<br>
+<span class="type">int</span> <span class="function">main</span>() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Door</span>* d = <span class="function">door_create</span>(<span class="string">1234</span>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (<span class="function">door_open</span>(d, <span class="string">1234</span>)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"门开了!\n"</span>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">door_close</span>(d);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="function">door_destroy</span>(d);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">0</span>;<br>
+}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景7: 总结 -->
+            <div class="scene" id="scene7">
+                <h1>🎯 核心要点</h1>
+                
+                <div class="key-points">
+                    <div class="point-card">
+                        <div class="point-icon">🔐</div>
+                        <div class="point-title">不透明指针</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">📁</div>
+                        <div class="point-title">.h / .c 分离</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">🎯</div>
+                        <div class="point-title">接口设计</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">🛡️</div>
+                        <div class="point-title">信息隐藏</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">🔧</div>
+                        <div class="point-title">灵活维护</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">⚡</div>
+                        <div class="point-title">编译优化</div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 50px; font-size: 2em;">
+                    隐藏实现 + 暴露接口 = 封装
+                </div>
+            </div>
+
+            <!-- 场景8: 实战准备 -->
+            <div class="scene" id="scene8">
+                <h1>🔨 实战编程</h1>
+                
+                <div class="big-icon">💰</div>
+                
+                <div class="success-box" style="font-size: 2em;">
+                    银行账户模块
+                </div>
+                
+                <div style="text-align: center; margin-top: 60px;">
+                    <button onclick="alert('开始编码！\n\n1. bank_account.h\n2. bank_account.c\n3. main.c')" 
+                            style="font-size: 1.8em; padding: 25px 60px; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+                        🚀 开始编码
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevScene()">⬅️ 上一步</button>
+            <div class="progress" id="progress">场景 1/8</div>
+            <button id="nextBtn" onclick="nextScene()">下一步 ➡️</button>
+            <button onclick="resetScene()" style="background: linear-gradient(135deg, #ff7675 0%, #ff6348 100%);">🔄 重播</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 8;
+
+        function updateScene() {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            
+            document.getElementById('scene' + currentScene).classList.add('active');
+            document.getElementById('progress').textContent = `场景 ${currentScene}/${totalScenes}`;
+            document.getElementById('prevBtn').disabled = currentScene === 1;
+            document.getElementById('nextBtn').disabled = currentScene === totalScenes;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                currentScene++;
+                updateScene();
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 1) {
+                currentScene--;
+                updateScene();
+            }
+        }
+
+        function resetScene() {
+            currentScene = 1;
+            updateScene();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevScene();
+            } else if (e.key === 'r' || e.key === 'R') {
+                resetScene();
+            }
+        });
+
+        updateScene();
+    </script>
+</body>
+</html>

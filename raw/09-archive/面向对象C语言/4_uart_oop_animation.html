@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UART设备类OOP教学动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            height: calc(100vh - 90px);
+        }
+        
+        .scene {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: calc(100vh - 120px);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .scene-title {
+            font-size: 28px;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* 第一页特殊样式 */
+        .hero-section {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        .main-title {
+            font-size: 42px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.8)); }
+        }
+        
+        .subtitle {
+            font-size: 22px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .uart-demo-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 25px 0;
+        }
+        
+        .demo-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 3px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .demo-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .code-box {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 35vh;
+            overflow: auto;
+            position: relative;
+        }
+        
+        .code-box::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -22px;
+            left: 0;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px 6px 0 0;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .code-box code {
+            color: #f8f8f2;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            display: block;
+            white-space: pre;
+        }
+        
+        .keyword { color: #ff79c6; }
+        .type { color: #8be9fd; }
+        .function { color: #50fa7b; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; font-style: italic; }
+        
+        .visual-demo {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .struct-visualization {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .struct-box {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 18px;
+            min-width: 220px;
+            max-width: 280px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .struct-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .struct-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .member {
+            padding: 6px;
+            margin: 4px 0;
+            background: #f5f7fa;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .member.data { border-left: 3px solid #50fa7b; }
+        .member.method { border-left: 3px solid #ff79c6; }
+        
+        .arrow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .arrow {
+            font-size: 36px;
+            color: #667eea;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 16px;
+            line-height: 1.7;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .this-pointer-demo {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .object-card {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .object-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .object-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .object-addr {
+            font-family: 'Consolas', monospace;
+            color: #555;
+            font-size: 13px;
+        }
+        
+        .connection-arrow {
+            width: 50px;
+            height: 4px;
+            background: #667eea;
+            position: relative;
+            animation: flowRight 2s infinite;
+        }
+        
+        .connection-arrow::after {
+            content: '▶';
+            position: absolute;
+            right: -12px;
+            top: -9px;
+            font-size: 20px;
+            color: #667eea;
+        }
+        
+        @keyframes flowRight {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            height: 90px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 15px;
+            padding: 4px;
+            min-width: 180px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 8px;
+            border-radius: 12px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 4px;
+            font-size: 13px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .emphasis {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .animated-border {
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea, #764ba2) border-box;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .key-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .point-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .point-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .point-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .point-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        
+        .point-desc {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-area">
+            <!-- 场景1: 主题突出 -->
+            <div class="scene active" id="scene1">
+                <div class="hero-section">
+                    <h1 class="main-title">🎯 UART设备类的完整实现</h1>
+                    <p class="subtitle">用真实外设讲透C语言面向对象编程</p>
+                </div>
+                
+                <div class="uart-demo-box">
+                    <div class="demo-card">
+                        <div class="demo-title">📚 本节课目标</div>
+                        <div style="text-align: left; padding: 10px; font-size: 15px; line-height: 1.8;">
+                            ✅ 实现完整的UART设备类<br>
+                            ✅ 封装硬件资源和操作方法<br>
+                            ✅ 使用this指针绑定对象<br>
+                            ✅ 掌握C语言OOP核心思想
+                        </div>
+                    </div>
+                    
+                    <div class="demo-card">
+                        <div class="demo-title">🎨 最终效果预览</div>
+                        <div style="text-align: left; padding: 10px;">
+                            <div class="code-box" data-label="" style="position: static; font-size: 13px; max-height: 150px; margin-top: 10px;">
+                                <code><span class="comment">// C++风格的优雅调用</span>
+uart1-><span class="function">init</span>(uart1);
+uart1-><span class="function">send</span>(uart1, <span class="string">"Hello"</span>);
+
+uart2-><span class="function">init</span>(uart2);
+uart2-><span class="function">send</span>(uart2, <span class="string">"World"</span>);</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="key-points">
+                    <div class="point-card">
+                        <div class="point-icon">📦</div>
+                        <div class="point-title">封装</div>
+                        <div class="point-desc">用struct打包硬件资源和配置参数</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">🎮</div>
+                        <div class="point-title">方法</div>
+                        <div class="point-desc">用函数指针让对象拥有行为</div>
+                    </div>
+                    
+                    <div class="point-card">
+                        <div class="point-icon">👆</div>
+                        <div class="point-title">this指针</div>
+                        <div class="point-desc">方法通过self参数找到自己的对象</div>
+                    </div>
+                </div>
+                
+                <div class="comparison-container">
+                    <div>
+                        <div class="code-box" data-label="❌ 传统C写法 - 混乱重复">
+                            <code><span class="comment">// 每个UART都要写一套</span>
+<span class="type">void</span> <span class="function">uart1_init</span>() {<span class="comment">/*...*/</span>}
+<span class="type">void</span> <span class="function">uart1_send</span>(<span class="type">char</span>* d) {<span class="comment">/*...*/</span>}
+
+<span class="type">void</span> <span class="function">uart2_init</span>() {<span class="comment">/*...*/</span>}
+<span class="type">void</span> <span class="function">uart2_send</span>(<span class="type">char</span>* d) {<span class="comment">/*...*/</span>}
+
+<span class="comment">// 第3个?继续复制...</span></code>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="code-box" data-label="✅ 面向对象写法 - 优雅复用">
+                            <code><span class="comment">// 一份实现,无限对象</span>
+<span class="type">UART_Device</span>* u1 = <span class="function">Create</span>(USART1);
+<span class="type">UART_Device</span>* u2 = <span class="function">Create</span>(USART2);
+
+u1-><span class="function">init</span>(u1);
+u2-><span class="function">init</span>(u2);
+
+<span class="comment">// 第3个?一行搞定</span>
+<span class="type">UART_Device</span>* u3 = <span class="function">Create</span>(USART3);</code>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <strong>🚀 为什么要学这个?</strong><br>
+                    在实际嵌入式项目中,往往需要管理多个相同类型的外设。面向对象的封装能让代码更清晰、更易维护、更容易复用!
+                </div>
+            </div>
+
+            <!-- 场景2: struct封装 -->
+            <div class="scene" id="scene2">
+                <h1 class="scene-title">📦 第一步:用struct封装数据</h1>
+                
+                <div class="visual-demo">
+                    <div class="struct-visualization">
+                        <div class="struct-box" style="animation: glow 2s infinite;">
+                            <div class="struct-header">UART_Device 结构体</div>
+                            <div class="member data">USART_TypeDef* hw</div>
+                            <div class="member data">uint32_t baudrate</div>
+                            <div class="member data">uint8_t tx_buffer[256]</div>
+                            <div class="member data">uint8_t rx_buffer[256]</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="arrow-container">
+                    <div class="emphasis">就像一张信息卡 📋</div>
+                    <div class="arrow">➜</div>
+                    <div class="emphasis">打包所有相关数据</div>
+                </div>
+                
+                <div class="code-box" data-label="代码示例">
+                    <code><span class="keyword">typedef</span> <span class="keyword">struct</span> {
+    <span class="comment">// 硬件资源</span>
+    <span class="type">USART_TypeDef</span>* hw;        <span class="comment">// 寄存器基地址</span>
+    
+    <span class="comment">// 配置参数</span>
+    <span class="type">uint32_t</span> baudrate;        <span class="comment">// 波特率</span>
+    
+    <span class="comment">// 缓冲区</span>
+    <span class="type">uint8_t</span> tx_buffer[256];   <span class="comment">// 发送缓冲</span>
+    <span class="type">uint8_t</span> rx_buffer[256];   <span class="comment">// 接收缓冲</span>
+} <span class="type">UART_Device</span>;</code>
+                </div>
+                
+                <div class="animated-border">
+                    <strong>💡 关键理解:</strong> struct就像一个容器,把UART需要的所有数据打包在一起。每创建一个对象,就有一份独立的数据副本,互不干扰!
+                </div>
+            </div>
+
+            <!-- 场景3: 函数指针 -->
+            <div class="scene" id="scene3">
+                <h1 class="scene-title">🎮 第二步:函数指针让对象拥有行为</h1>
+                
+                <div class="highlight-box" style="font-size: 18px;">
+                    <strong>🤔 思考:</strong> 数据有了,但怎么让对象"动起来"?<br>
+                    <strong>💡 答案:</strong> 函数指针 = 遥控器上的按钮!
+                </div>
+                
+                <div class="visual-demo">
+                    <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div class="struct-box" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-color: white;">
+                            <div class="struct-header" style="color: white; border-bottom-color: white;">遥控器</div>
+                            <div style="padding: 12px; font-size: 16px;">
+                                🔴 开机按钮<br>
+                                🟢 换台按钮<br>
+                                🔵 音量按钮
+                            </div>
+                        </div>
+                        
+                        <div class="arrow" style="font-size: 48px;">≈</div>
+                        
+                        <div class="struct-box" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <div class="struct-header">UART对象</div>
+                            <div class="member method">void (*init)()</div>
+                            <div class="member method">void (*send)()</div>
+                            <div class="member method">void (*recv)()</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-box" data-label="添加函数指针成员">
+                    <code><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="type">UART_Device UART_Device</span>;
+
+<span class="keyword">struct</span> <span class="type">UART_Device</span> {
+    <span class="comment">// 数据成员</span>
+    <span class="type">USART_TypeDef</span>* hw;
+    <span class="type">uint32_t</span> baudrate;
+    
+    <span class="comment">// 方法成员(函数指针)</span>
+    <span class="type">void</span> (*init)(<span class="type">UART_Device</span>* self);
+    <span class="type">void</span> (*send)(<span class="type">UART_Device</span>* self, <span class="keyword">const</span> <span class="type">char</span>* data, <span class="type">int</span> len);
+};</code>
+                </div>
+                
+                <div class="animated-border">
+                    <strong>🔑 语法重点:</strong> <code>void (*init)(...)</code> 括号很重要! 每个函数指针的<strong>第一个参数</strong>都是 <code>UART_Device* self</code> - 这就是接下来要讲的 <strong>this指针</strong>!
+                </div>
+            </div>
+
+            <!-- 场景4: this指针 -->
+            <div class="scene" id="scene4">
+                <h1 class="scene-title">👆 第三步:this指针 - 方法的灵魂</h1>
+                
+                <div class="highlight-box" style="font-size: 18px; text-align: center;">
+                    <strong>🎯 核心问题:</strong> 当调用 <code>uart1->send()</code> 时,<br>
+                    send函数怎么知道要操作的是uart1还是uart2?<br><br>
+                    <span class="emphasis" style="font-size: 24px;">答案:this指针!</span>
+                </div>
+                
+                <div class="this-pointer-demo">
+                    <div class="object-card">
+                        <div class="object-name">uart1 对象</div>
+                        <div class="object-addr">地址: 0x20000100</div>
+                        <div style="margin-top: 12px; font-size: 13px;">
+                            hw = USART1<br>
+                            baudrate = 115200
+                        </div>
+                    </div>
+                    
+                    <div class="connection-arrow"></div>
+                    
+                    <div class="object-card" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);">
+                        <div class="object-name">send 方法</div>
+                        <div style="margin-top: 12px; font-size: 14px; text-align: left;">
+                            <strong>收到参数:</strong><br>
+                            self = 0x20000100<br><br>
+                            <strong>操作:</strong><br>
+                            self->hw->DR = data[0]
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-box" data-label="this指针的本质">
+                    <code><span class="comment">// 当你调用:</span>
+uart1-><span class="function">send</span>(uart1, <span class="string">"Hello"</span>, 5);
+<span class="comment">              ^^^^^^ 这就是this指针!</span>
+
+<span class="comment">// 函数内部通过self访问对象成员</span>
+<span class="type">void</span> <span class="function">uart_send_impl</span>(<span class="type">UART_Device</span>* self, 
+                   <span class="keyword">const</span> <span class="type">char</span>* data, <span class="type">int</span> len) {
+    self->hw->DR = data[0];  <span class="comment">// 操作这个对象的硬件</span>
+    memcpy(self->tx_buffer, data, len);
+}</code>
+                </div>
+                
+                <div class="animated-border">
+                    <strong>🏦 生活化比喻:</strong> 就像你去ATM取款,必须先<strong>插卡</strong>(传入this指针),告诉机器"我是张三"。ATM才知道从<strong>张三的账户</strong>取钱。<br>
+                    <span class="emphasis">this指针 = 对象的身份证!</span>
+                </div>
+            </div>
+
+            <!-- 场景5: 完整结构设计 -->
+            <div class="scene" id="scene5">
+                <h1 class="scene-title">🏗️ UART类的完整架构</h1>
+                
+                <div class="struct-visualization" style="flex-direction: column; align-items: center;">
+                    <div class="struct-box" style="width: 85%; max-width: 550px;">
+                        <div class="struct-header" style="font-size: 18px;">📊 UART_Device 完整结构</div>
+                        
+                        <div style="margin: 15px 0;">
+                            <div style="color: #50fa7b; font-weight: bold; margin-bottom: 8px; font-size: 14px;">🟢 数据成员(属性)</div>
+                            <div class="member data">USART_TypeDef* hw</div>
+                            <div class="member data">uint32_t baudrate</div>
+                            <div class="member data">uint8_t tx_buffer[256]</div>
+                            <div class="member data">uint8_t rx_buffer[256]</div>
+                        </div>
+                        
+                        <div style="margin: 15px 0;">
+                            <div style="color: #ff79c6; font-weight: bold; margin-bottom: 8px; font-size: 14px;">🔴 方法成员(行为)</div>
+                            <div class="member method">void (*init)(self)</div>
+                            <div class="member method">void (*send)(self, data, len)</div>
+                            <div class="member method">int (*recv)(self, buf, max)</div>
+                            <div class="member method">void (*deinit)(self)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-box" data-label="构造函数 - 创建对象的工厂">
+                    <code><span class="type">UART_Device</span>* <span class="function">UART_Device_Create</span>(
+    <span class="type">USART_TypeDef</span>* hw, <span class="type">uint32_t</span> baud) {
+    
+    <span class="comment">// 1️⃣ 分配内存</span>
+    <span class="type">UART_Device</span>* dev = malloc(<span class="keyword">sizeof</span>(<span class="type">UART_Device</span>));
+    
+    <span class="comment">// 2️⃣ 初始化数据成员</span>
+    dev->hw = hw;
+    dev->baudrate = baud;
+    
+    <span class="comment">// 3️⃣ 绑定方法(关键!)</span>
+    dev->init = uart_init_impl;
+    dev->send = uart_send_impl;
+    
+    <span class="keyword">return</span> dev;
+}</code>
+                </div>
+                
+                <div class="highlight-box">
+                    <strong>🔧 构造函数三部曲:</strong><br>
+                    1️⃣ <strong>分配内存</strong> - 给对象找个"家"<br>
+                    2️⃣ <strong>初始化数据</strong> - 填写"身份信息"<br>
+                    3️⃣ <strong>绑定方法</strong> - 安装"遥控按钮"(最关键!)
+                </div>
+            </div>
+
+            <!-- 场景6: 方法实现 -->
+            <div class="scene" id="scene6">
+                <h1 class="scene-title">⚙️ 方法实现:init 和 send</h1>
+                
+                <div class="code-box" data-label="init方法 - 初始化硬件">
+                    <code><span class="type">void</span> <span class="function">uart_init_impl</span>(<span class="type">UART_Device</span>* self) {
+    <span class="comment">// 通过self访问对象的硬件</span>
+    self->hw->CR1 |= USART_CR1_UE;
+    
+    <span class="comment">// 根据对象的波特率配置</span>
+    <span class="type">uint32_t</span> div = 42000000/(16*self->baudrate);
+    self->hw->BRR = div;
+    
+    <span class="comment">// 配置收发使能</span>
+    self->hw->CR1 |= USART_CR1_TE | USART_CR1_RE;
+}</code>
+                </div>
+                
+                <div class="code-box" data-label="send方法 - 发送数据">
+                    <code><span class="type">void</span> <span class="function">uart_send_impl</span>(<span class="type">UART_Device</span>* self, 
+                  <span class="keyword">const</span> <span class="type">char</span>* data, <span class="type">int</span> len) {
+    <span class="keyword">for</span>(<span class="type">int</span> i=0; i<len; i++) {
+        <span class="comment">// 等待发送寄存器空</span>
+        <span class="keyword">while</span>(!(self->hw->SR & USART_SR_TXE));
+        
+        <span class="comment">// 写入数据</span>
+        self->hw->DR = data[i];
+    }
+}</code>
+                </div>
+                
+                <div class="animated-border">
+                    <strong>💡 关键理解:</strong><br>
+                    • 所有操作都通过 <code>self-></code> 访问对象成员<br>
+                    • 同一个函数,通过<strong>不同的self参数</strong>可以操作不同对象<br>
+                    • uart1->send() 和 uart2->send() 调用同一函数,但操作不同硬件!<br><br>
+                    <span class="emphasis">这就是OOP的精髓:代码复用 + 数据隔离</span>
+                </div>
+            </div>
+
+            <!-- 场景7: 最终效果 -->
+            <div class="scene" id="scene7">
+                <h1 class="scene-title">🎉 最终效果:C++风格的API</h1>
+                
+                <div class="code-box" data-label="优雅的调用方式">
+                    <code><span class="comment">// 创建两个UART对象</span>
+<span class="type">UART_Device</span>* uart1 = <span class="function">UART_Device_Create</span>(USART1, 115200);
+<span class="type">UART_Device</span>* uart2 = <span class="function">UART_Device_Create</span>(USART2, 9600);
+
+<span class="comment">// C++风格调用</span>
+uart1-><span class="function">init</span>(uart1);
+uart1-><span class="function">send</span>(uart1, <span class="string">"Hello UART1"</span>, 11);
+
+uart2-><span class="function">init</span>(uart2);
+uart2-><span class="function">send</span>(uart2, <span class="string">"Hello UART2"</span>, 11);
+
+<span class="comment">// 用宏进一步简化</span>
+<span class="keyword">#define</span> UART_INIT(obj) (obj)-><span class="function">init</span>(obj)
+<span class="keyword">#define</span> UART_SEND(obj,d,l) (obj)-><span class="function">send</span>(obj,d,l)
+
+<span class="function">UART_INIT</span>(uart1);
+<span class="function">UART_SEND</span>(uart1, <span class="string">"Clean!"</span>, 6);</code>
+                </div>
+                
+                <div class="visual-demo" style="text-align: center;">
+                    <div class="emphasis" style="font-size: 28px; margin: 25px 0; line-height: 1.8;">
+                        ✅ 代码复用<br>
+                        ✅ 逻辑清晰<br>
+                        ✅ 易于扩展<br>
+                        ✅ 面向对象思想
+                    </div>
+                </div>
+                
+                <div class="highlight-box" style="font-size: 17px;">
+                    <strong>🎓 今天学到的核心知识:</strong><br><br>
+                    1️⃣ <strong>封装</strong>: 用struct打包相关数据<br>
+                    2️⃣ <strong>方法</strong>: 用函数指针让对象拥有行为<br>
+                    3️⃣ <strong>this指针</strong>: 第一个参数传对象地址,实现方法与对象的绑定<br><br>
+                    <span class="emphasis" style="font-size: 22px;">掌握这三点,你就能在C语言中写出优雅的OOP代码!</span>
+                </div>
+                
+                <div class="animated-border" style="margin-top: 20px; text-align: center; font-size: 16px;">
+                    <strong>🚀 下一步学习:</strong><br>
+                    继承、多态、虚函数表... 更多精彩内容等你探索!
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制区域 -->
+        <div class="controls">
+            <button class="btn" id="prevBtn" onclick="prevScene()">⬅️ 上一步</button>
+            
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+                <div class="progress-text" id="progressText">场景 1/7</div>
+            </div>
+            
+            <button class="btn" id="nextBtn" onclick="nextScene()">下一步 ➡️</button>
+            <button class="btn" onclick="resetScenes()">🔄 重播</button>
+            
+            <div class="tooltip">
+                <button class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    ⌨️ 快捷键
+                </button>
+                <span class="tooltiptext">空格:下一步 | ←→:切换场景</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 7;
+
+        function showScene(sceneNum) {
+            // 隐藏所有场景
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            
+            // 显示当前场景
+            document.getElementById(`scene${sceneNum}`).classList.add('active');
+            
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = (sceneNum === 1);
+            document.getElementById('nextBtn').disabled = (sceneNum === totalScenes);
+            
+            // 更新进度条
+            const progress = (sceneNum / totalScenes) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `场景 ${sceneNum}/${totalScenes}`;
+            
+            // 滚动到顶部
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                currentScene++;
+                showScene(currentScene);
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 1) {
+                currentScene--;
+                showScene(currentScene);
+            }
+        }
+
+        function resetScenes() {
+            currentScene = 1;
+            showScene(currentScene);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.code === 'ArrowRight') {
+                nextScene();
+            } else if (e.code === 'ArrowLeft') {
+                prevScene();
+            }
+        });
+
+        // 初始化
+        showScene(1);
+    </script>
+</body>
+</html>

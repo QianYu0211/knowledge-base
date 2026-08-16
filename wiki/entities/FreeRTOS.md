@@ -2,8 +2,8 @@
 title: "FreeRTOS"
 type: entity
 tags: [RTOS, 操作系统, 嵌入式, 任务调度]
-sources: ["raw/01-articles/FreeRTOS任务上下文切换.md", "raw/01-articles/STM32的启动流程.md"]
-last_updated: 2026-08-03
+sources: ["raw/01-articles/FreeRTOS任务上下文切换.md", "raw/01-articles/STM32的启动流程.md", "raw/01-articles/FreeRTOS打印栈水位V2/FreeRTOS打印栈水位V2.md"]
+last_updated: 2026-08-14
 ---
 
 ## 定义
@@ -21,6 +21,8 @@ FreeRTOS 是一款开源、抢占式的**实时操作系统（RTOS）**，在嵌
 - **IPC 机制**：[[消息队列]]、[[信号量]]、互斥锁（支持优先级继承）、事件组，是任务间解耦与同步的标准手段。
 - **经典问题**：互斥锁等待可能引发 [[优先级反转]]，需配合优先级继承或改为消息队列。
 - **系统接管**：`vTaskStartScheduler()` 不返回，调用后配置 SysTick、触发 SVC、经 `vPortSVCHandler` 把栈指针从 MSP 切到 PSP 后运行首个任务。
+- **内存管理**：任务栈/TCB/队列等对象从**静态数组 `ucHeap[]`**（大小由 `configTOTAL_HEAP_SIZE` 决定，位于 SRAM `.bss` 段）经 `pvPortMalloc()`/`vPortFree()` 分配，不经过 C 库 `malloc()`；用 `xPortGetFreeHeapSize()`/`xPortGetMinimumEverFreeHeapSize()` 监控堆水位，详见 [[FreeRTOS堆内存管理]]。
+- **栈监控与调优**：`uxTaskGetStackHighWaterMark()` 查询任务**历史最低剩余栈**（水位，返回值单位是字×4 得字节），`vTaskList()` 输出全任务信息表；配合"局部变量 + 函数嵌套深度 + 参数"三要素估算栈大小，详见 [[栈水位监控]] 与 [[任务栈大小估算]]。
 
 ## 关联连接
 - [[任务上下文切换]] — 换场机制
@@ -29,5 +31,7 @@ FreeRTOS 是一款开源、抢占式的**实时操作系统（RTOS）**，在嵌
 - [[消息队列]] — 核心 IPC
 - [[信号量]] — 核心同步
 - [[优先级反转]] — 经典陷阱
+- [[FreeRTOS堆内存管理]] — 堆内存模型与水位统计
+- [[栈水位监控]] / [[任务栈大小估算]] — 栈调试与配置
 - [[STM32]] — 最常用宿主芯片
-- [[摘要-freertos任务上下文切换]] / [[摘要-stm32启动流程]] — 来源
+- [[摘要-freertos任务上下文切换]] / [[摘要-stm32启动流程]] / [[摘要-freertos打印栈水位]] — 来源

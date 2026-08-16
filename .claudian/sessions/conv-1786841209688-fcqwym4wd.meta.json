@@ -1,0 +1,24 @@
+{
+  "id": "conv-1786841209688-fcqwym4wd",
+  "providerId": "claude",
+  "title": "Analyze wiki main thematic lines",
+  "titleGenerationStatus": "success",
+  "createdAt": 1786841209690,
+  "updatedAt": 1786842937949,
+  "lastResponseAt": 1786842937949,
+  "sessionId": "0fd44ed6-7420-46ba-9f26-10e727f1a2b5",
+  "selectedModel": "haiku",
+  "providerState": {
+    "providerSessionId": "0fd44ed6-7420-46ba-9f26-10e727f1a2b5"
+  },
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 306,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 132736,
+    "contextWindow": 200000,
+    "contextWindowIsAuthoritative": true,
+    "contextTokens": 133042,
+    "percentage": 67
+  }
+}

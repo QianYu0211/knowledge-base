@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深拷贝与浅拷贝教学动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            height: calc(100vh - 80px);
+            padding: 20px;
+        }
+        
+        .scene {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 140px);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .scene-title {
+            font-size: 36px;
+            color: #667eea;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .visual-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 40px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+        }
+        
+        .memory-region {
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            background: #f8f9ff;
+            min-width: 300px;
+        }
+        
+        .memory-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .variable-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .variable-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .variable-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .variable-value {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+        
+        .pointer-value {
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 16px;
+        }
+        
+        .heap-block {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .heap-block:hover {
+            transform: scale(1.05);
+        }
+        
+        .address-label {
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .data-content {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .arrow {
+            stroke: #667eea;
+            stroke-width: 3;
+            fill: none;
+            marker-end: url(#arrowhead);
+            animation: drawLine 1s ease-in-out;
+        }
+        
+        @keyframes drawLine {
+            from { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+            to { stroke-dasharray: 1000; stroke-dashoffset: 0; }
+        }
+        
+        .danger-arrow {
+            stroke: #f5576c;
+            stroke-width: 3;
+            stroke-dasharray: 10, 5;
+            animation: dangerPulse 1.5s infinite;
+        }
+        
+        @keyframes dangerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 1.8;
+            margin: 30px 0;
+            overflow-x: auto;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        
+        .code-keyword {
+            color: #ff79c6;
+        }
+        
+        .code-function {
+            color: #50fa7b;
+        }
+        
+        .code-string {
+            color: #f1fa8c;
+        }
+        
+        .code-comment {
+            color: #6272a4;
+            font-style: italic;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 40px 0;
+            font-size: 18px;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 20px;
+        }
+        
+        .comparison-table td {
+            padding: 18px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9ff;
+        }
+        
+        .check-mark {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .cross-mark {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .progress-info {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .scenario-card {
+            background: linear-gradient(135deg, #f8f9ff, #fff);
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            transition: transform 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.25);
+        }
+        
+        .scenario-title {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .intro-icon {
+            font-size: 100px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .key-point {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            font-size: 22px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .concept-box {
+            text-align: center;
+            flex: 1;
+            min-width: 320px;
+            padding: 30px;
+        }
+
+        .concept-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .concept-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .concept-desc {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .danger-indicator {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 22px;
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        .step-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            font-size: 18px;
+        }
+
+        .step-title {
+            color: #155724;
+            font-weight: bold;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-area" id="contentArea">
+            <!-- 场景1: 课程介绍 -->
+            <div class="scene active" id="scene1">
+                <div class="scene-title">🎯 深拷贝与浅拷贝</div>
+                <div class="intro-icon">📝 ➡️ 📋</div>
+                <div class="key-point">
+                    复制笔记本的两种方式
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 60px; flex-wrap: wrap; gap: 40px;">
+                    <div class="concept-box">
+                        <div class="concept-icon">🔗</div>
+                        <div class="concept-title" style="color: #667eea;">浅拷贝</div>
+                        <div class="concept-desc">
+                            只复制"位置信息"<br>
+                            ⚠️ 共享数据
+                        </div>
+                    </div>
+                    <div class="concept-box">
+                        <div class="concept-icon">📦</div>
+                        <div class="concept-title" style="color: #f5576c;">深拷贝</div>
+                        <div class="concept-desc">
+                            复制完整内容<br>
+                            ✅ 数据独立
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景2: 什么是拷贝 -->
+            <div class="scene" id="scene2">
+                <div class="scene-title">📚 什么是拷贝</div>
+                <div class="code-block">
+<span class="code-keyword">typedef struct</span> {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">char</span> *name;&nbsp;&nbsp;<span class="code-comment">// 指针是关键！</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">int</span> age;<br>
+} <span class="code-keyword">Person</span>;<br>
+<br>
+Person p1;<br>
+p1.name = <span class="code-string">"张三"</span>;<br>
+p1.age = 25;<br>
+<br>
+Person p2 = p1;&nbsp;&nbsp;<span class="code-comment">// 🤔 会发生什么？</span>
+                </div>
+                <div class="visual-container">
+                    <div class="variable-box">
+                        <div class="variable-name">p1</div>
+                        <div class="variable-value">
+                            name: <span class="pointer-value">0x1000 → "张三"</span><br>
+                            age: 25
+                        </div>
+                    </div>
+                    <div style="font-size: 60px; color: #667eea;">❓</div>
+                    <div class="variable-box">
+                        <div class="variable-name">p2</div>
+                        <div class="variable-value">
+                            name: <span class="pointer-value">0x1000 → "张三"</span><br>
+                            age: 25
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    p2.name 指向新内存？还是和 p1 共享？
+                </div>
+            </div>
+
+            <!-- 场景3: 浅拷贝原理 -->
+            <div class="scene" id="scene3">
+                <div class="scene-title">🔗 浅拷贝：只复制地址</div>
+                <div class="visual-container">
+                    <div class="memory-region">
+                        <div class="memory-title">栈区</div>
+                        <div class="variable-box">
+                            <div class="variable-name">p1</div>
+                            <div class="variable-value">
+                                name: <span class="pointer-value">0x1000</span><br>
+                                age: 25
+                            </div>
+                        </div>
+                        <div class="variable-box" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                            <div class="variable-name">p2 浅拷贝</div>
+                            <div class="variable-value">
+                                name: <span class="pointer-value">0x1000</span><br>
+                                age: 25
+                            </div>
+                        </div>
+                    </div>
+                    <svg width="180" height="320" style="flex-shrink: 0;">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#667eea" />
+                            </marker>
+                        </defs>
+                        <path d="M 10 70 Q 90 70, 170 70" class="arrow" />
+                        <path d="M 10 200 Q 90 200, 170 200" class="arrow" style="stroke: #f5576c;" />
+                    </svg>
+                    <div class="memory-region">
+                        <div class="memory-title">堆区</div>
+                        <div class="heap-block">
+                            <div class="address-label">0x1000</div>
+                            <div class="data-content">"张三"</div>
+                        </div>
+                        <div class="danger-indicator">
+                            ⚠️ 两个指针指向同一内存
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    就像两人共用一个银行账户
+                </div>
+            </div>
+
+            <!-- 场景4: 浅拷贝的危险 -->
+            <div class="scene" id="scene4">
+                <div class="scene-title">⚠️ 浅拷贝的三大陷阱</div>
+                <div class="scenario-grid">
+                    <div class="scenario-card">
+                        <div class="scenario-title">🔴 意外修改</div>
+                        <div class="code-block" style="font-size: 16px; max-height: 15vh;">
+p1.name = <span class="code-string">"李四"</span>;<br>
+<span class="code-comment">// p2.name 也变了！</span>
+                        </div>
+                    </div>
+                    <div class="scenario-card">
+                        <div class="scenario-title">🔴 重复释放</div>
+                        <div class="code-block" style="font-size: 16px; max-height: 15vh;">
+<span class="code-function">free</span>(p1.name);<br>
+<span class="code-function">free</span>(p2.name);<br>
+<span class="code-comment">// 💥 崩溃！</span>
+                        </div>
+                    </div>
+                    <div class="scenario-card">
+                        <div class="scenario-title">🔴 悬空指针</div>
+                        <div class="code-block" style="font-size: 16px; max-height: 15vh;">
+<span class="code-function">free</span>(p1.name);<br>
+<span class="code-comment">// p2.name 指向非法内存</span><br>
+<span class="code-function">printf</span>(<span class="code-string">"%s"</span>, p2.name);<br>
+<span class="code-comment">// 💥 崩溃！</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景5: 深拷贝原理 -->
+            <div class="scene" id="scene5">
+                <div class="scene-title">💎 深拷贝：数据完全独立</div>
+                <div class="visual-container">
+                    <div class="memory-region">
+                        <div class="memory-title">栈区</div>
+                        <div class="variable-box">
+                            <div class="variable-name">p1</div>
+                            <div class="variable-value">
+                                name: <span class="pointer-value">0x1000</span><br>
+                                age: 25
+                            </div>
+                        </div>
+                        <div class="variable-box" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                            <div class="variable-name">p2 深拷贝</div>
+                            <div class="variable-value">
+                                name: <span class="pointer-value">0x2000</span><br>
+                                age: 25
+                            </div>
+                        </div>
+                    </div>
+                    <svg width="180" height="400" style="flex-shrink: 0;">
+                        <path d="M 10 70 Q 90 70, 170 70" class="arrow" />
+                        <path d="M 10 200 Q 90 280, 170 280" class="arrow" style="stroke: #28a745;" />
+                    </svg>
+                    <div class="memory-region">
+                        <div class="memory-title">堆区</div>
+                        <div class="heap-block">
+                            <div class="address-label">0x1000</div>
+                            <div class="data-content">"张三"</div>
+                        </div>
+                        <div class="heap-block" style="background: linear-gradient(135deg, #28a745, #20c997); margin-top: 40px;">
+                            <div class="address-label">0x2000 (新内存)</div>
+                            <div class="data-content">"张三"</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-box">
+                    <div class="step-title">✅ 三个步骤</div>
+                    1. malloc 分配新内存<br>
+                    2. strcpy 复制数据<br>
+                    3. 指向新地址
+                </div>
+            </div>
+
+            <!-- 场景6: 对比 -->
+            <div class="scene" id="scene6">
+                <div class="scene-title">⚖️ 深拷贝 vs 浅拷贝</div>
+                <table class="comparison-table">
+                    <tr>
+                        <th>维度</th>
+                        <th>浅拷贝</th>
+                        <th>深拷贝</th>
+                    </tr>
+                    <tr>
+                        <td><strong>复制内容</strong></td>
+                        <td>只复制地址</td>
+                        <td>复制完整数据</td>
+                    </tr>
+                    <tr>
+                        <td><strong>数据独立</strong></td>
+                        <td><span class="cross-mark">✗</span> 共享</td>
+                        <td><span class="check-mark">✓</span> 独立</td>
+                    </tr>
+                    <tr>
+                        <td><strong>修改影响</strong></td>
+                        <td><span class="cross-mark">✗</span> 相互影响</td>
+                        <td><span class="check-mark">✓</span> 互不影响</td>
+                    </tr>
+                    <tr>
+                        <td><strong>速度</strong></td>
+                        <td><span class="check-mark">✓</span> 快</td>
+                        <td><span class="cross-mark">✗</span> 慢</td>
+                    </tr>
+                    <tr>
+                        <td><strong>内存</strong></td>
+                        <td><span class="check-mark">✓</span> 少</td>
+                        <td><span class="cross-mark">✗</span> 多</td>
+                    </tr>
+                    <tr>
+                        <td><strong>安全性</strong></td>
+                        <td><span class="cross-mark">✗</span> 易出错</td>
+                        <td><span class="check-mark">✓</span> 安全</td>
+                    </tr>
+                </table>
+                <div class="key-point">
+                    只读/临时 → 浅拷贝<br>
+                    修改/销毁 → 深拷贝
+                </div>
+            </div>
+
+            <!-- 场景7: 嵌入式场景 -->
+            <div class="scene" id="scene7">
+                <div class="scene-title">🏭 嵌入式应用场景</div>
+                <div class="scenario-grid">
+                    <div class="scenario-card">
+                        <div class="scenario-title">📡 传感器数据缓冲</div>
+                        <div style="font-size: 18px; text-align: center; margin-top: 20px;">
+                            显示模块需要独立数据副本<br>
+                            <span style="color: #28a745; font-weight: bold;">→ 深拷贝</span>
+                        </div>
+                    </div>
+                    <div class="scenario-card">
+                        <div class="scenario-title">⚙️ 配置参数备份</div>
+                        <div style="font-size: 18px; text-align: center; margin-top: 20px;">
+                            备份不能被修改影响<br>
+                            <span style="color: #28a745; font-weight: bold;">→ 深拷贝</span>
+                        </div>
+                    </div>
+                    <div class="scenario-card">
+                        <div class="scenario-title">📬 RTOS消息队列</div>
+                        <div style="font-size: 18px; text-align: center; margin-top: 20px;">
+                            消息数据独立存在<br>
+                            <span style="color: #28a745; font-weight: bold;">→ 深拷贝</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 50px;">
+                    安全性 > 内存效率
+                </div>
+            </div>
+
+            <!-- 场景8: 代码实现 -->
+            <div class="scene" id="scene8">
+                <div class="scene-title">💻 代码实现</div>
+                
+                <div style="margin: 30px 0;">
+                    <h3 style="color: #667eea; font-size: 24px; margin-bottom: 15px;">浅拷贝</h3>
+                    <div class="code-block">
+Person <span class="code-function">shallow_copy</span>(Person *src) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Person dest;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dest.name = src->name;&nbsp;&nbsp;<span class="code-comment">// 只复制地址</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;dest.age = src->age;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> dest;<br>
+}
+                    </div>
+                </div>
+
+                <div style="margin: 40px 0;">
+                    <h3 style="color: #28a745; font-size: 24px; margin-bottom: 15px;">深拷贝</h3>
+                    <div class="code-block">
+Person <span class="code-function">deep_copy</span>(Person *src) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Person dest;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dest.age = src->age;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// 分配新内存</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">int</span> len = <span class="code-function">strlen</span>(src->name) + 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dest.name = (<span class="code-keyword">char</span>*)<span class="code-function">malloc</span>(len);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// 复制数据</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> (dest.name != <span class="code-keyword">NULL</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-function">strcpy</span>(dest.name, src->name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> dest;<br>
+}
+                    </div>
+                </div>
+
+                <div class="key-point">
+                    malloc + strcpy = 深拷贝
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 控制区域 -->
+        <div class="controls">
+            <button class="btn btn-secondary" id="prevBtn" onclick="prevScene()">⬅️ 上一步</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="progress-info">
+                    <span id="currentScene">1</span> / <span id="totalScenes">8</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextScene()">下一步 ➡️</button>
+            <button class="btn btn-secondary" onclick="resetAnimation()">🔄 重播</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 1;
+        const totalScenes = 8;
+
+        function updateScene() {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            
+            document.getElementById(`scene${currentScene}`).classList.add('active');
+            
+            document.getElementById('currentScene').textContent = currentScene;
+            document.getElementById('totalScenes').textContent = totalScenes;
+            
+            const progress = (currentScene / totalScenes) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            document.getElementById('prevBtn').disabled = currentScene === 1;
+            document.getElementById('nextBtn').disabled = currentScene === totalScenes;
+            
+            document.getElementById('contentArea').scrollTop = 0;
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                currentScene++;
+                updateScene();
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 1) {
+                currentScene--;
+                updateScene();
+            }
+        }
+
+        function resetAnimation() {
+            currentScene = 1;
+            updateScene();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevScene();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                resetAnimation();
+            }
+        });
+
+        updateScene();
+    </script>
+</body>
+</html>
