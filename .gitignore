@@ -22,3 +22,6 @@ Thumbs.db
 
 # 忽略垃圾箱文件夹
 .trash/
+
+# 忽略claudian插件文件
+.claudian/
