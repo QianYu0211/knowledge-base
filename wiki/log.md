@@ -454,3 +454,7 @@
 ## [2026-08-18] sync | 规则层重构：CLAUDE.md 薄壳化 + 引入 AGENTS.md 标准
 - **变更**: 新增 [[docs/agent-rules.md]]（规则唯一事实来源 SSOT）与 [[AGENTS.md]]（跨工具标准入口）；[[CLAUDE.md]] 改为薄壳（@import + 显式指引），规则正文全部迁移至 docs/agent-rules.md，避免双份漂移; 更新 [[README]]
 - **冲突**: 无 — 纯基础设施重构，未触及 raw/ 与 wiki/ 知识内容
+
+## [2026-08-18] sync | README 全面修订：与规则重构及仓库实况对齐
+- **变更**: 更新 [[README]] — ① skills 列表与实际对齐（删除不存在的 obsidian-cli/defuddle，补充 obsidian-markdown/mermaid-visualizer）；② raw 结构对齐（删除不存在的 04-meeting_notes）；③ 新增"规则文件体系"表（SSOT/CLAUDE.md/AGENTS.md 三层职责）；④ 使用方式改为跨工具表述（Claude Code / Codex / Gemini CLI / Cursor / pi）
+- **冲突**: 无 — 纯文档修订，未触及 raw/ 与 wiki/ 知识内容
