@@ -27,7 +27,12 @@
 │   ├── 🔍 sources/           ← 摘要层：针对 raw 文件的一对一核心观点提炼 
 │   └── 💎 syntheses/         ← 综合层：针对复杂提问生成的深度研究报告 
 │
-├── 🤖 CLAUDE.md              ← 全局心智规范：定义语言协议、读写权限与 Wiki Schema
+├── 📋 AGENTS.md              ← 跨工具规则入口（AGENTS.md 开放标准，Linux Foundation 托管）
+│
+├── 🤖 CLAUDE.md              ← Claude Code 规则入口（@import 引入 docs/agent-rules.md）
+│
+├── 📚 docs/                  ← 规则层
+│   └── 📄 agent-rules.md     ← 全部规则的唯一事实来源（SSOT）：语言协议、权限边界、Wiki Schema
 │
 └── ⚙️ .claude/               ← Claude Code 官方配置目录
     └── 🛠️ skills/            ← Agent Skill中心
@@ -37,7 +42,6 @@
         ├── 🔌 obsidian-cli/  ← Obsidian官方：调用 Obsidian 原生 API 进行检索、打开页面
         └── 🪄 defuddle/       ← Obsidian官方：将网页 URL 自动清理并转化为 Markdown 存入raw/
 ```
-
 
 ## 使用方式
 
