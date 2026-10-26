@@ -1,7 +1,7 @@
 ---
 title: "BUS OFF恢复策略"
 type: concept
-tags: [CAN, BUS OFF, 恢复策略, 错误处理, 诊断]
+tags: [CAN, BUS-OFF, 恢复策略, 错误处理, 诊断]
 sources: ["raw/01-articles/CAN通信基础：总线关闭（BUS OFF）的概念和处理方式.md"]
 last_updated: 2026-08-14
 ---

@@ -48,7 +48,7 @@ due: 2024-02-01T14:30:00
 #tag_with_underscores
 ```
 
-Tags can contain: letters (any language), numbers (not first character), underscores `_`, hyphens `-`, forward slashes `/` (for nesting).
+Tags can contain: letters (any language), numbers (not first character), underscores `_`, hyphens `-`, forward slashes `/` (for nesting). **No spaces** — use hyphens for compound terms (e.g. `NOR-Flash`). Keep the official casing of proper nouns (e.g. `eMMC`, `nRF52840`, `FreeRTOS`, `volatile`) — do not force ALL-CAPS or lowercase.
 
 In frontmatter:
 

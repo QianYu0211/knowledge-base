@@ -1,7 +1,7 @@
 ---
 title: "摘要-can-bus-off"
 type: source
-tags: [来源, 原始文件, CAN, BUS OFF, 错误处理, 诊断]
+tags: [来源, 原始文件, CAN, BUS-OFF, 错误处理, 诊断]
 sources: ["raw/01-articles/CAN通信基础：总线关闭（BUS OFF）的概念和处理方式.md"]
 last_updated: 2026-08-14
 ---

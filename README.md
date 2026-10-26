@@ -54,7 +54,7 @@
 
 ## 使用方式
 
-在 Obsidian 中打开本 vault，使用任意主流 AI 编码 Agent 执行操作（Claude Code、OpenAI Codex、Gemini CLI、Cursor、pi 等）。所有 Agent 均通过 `AGENTS.md` / `CLAUDE.md` 入口读取 `docs/agent-rules.md` 中的规则。
+在 Obsidian 中打开本 vault，使用任意主流 AI 编码 Agent 执行操作。所有 Agent 均通过 `AGENTS.md` / `CLAUDE.md` 入口读取 `docs/agent-rules.md` 中的规则。
 
 ### 常用命令
 

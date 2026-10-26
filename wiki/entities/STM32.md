@@ -3,7 +3,7 @@ title: "STM32"
 type: entity
 tags: [MCU, 微控制器, Cortex-M, 嵌入式]
 sources: ["raw/01-articles/STM32的启动流程.md", "raw/01-articles/30_STM32_进入低功耗模式/30_STM32_进入低功耗模式.md"]
-last_updated: 2026-08-16
+last_updated: 2026-08-23
 ---
 
 ## 定义
@@ -21,7 +21,7 @@ STM32 是意法半导体（ST）基于 **ARM Cortex-M** 内核的 32 位微控�
 - **上电执行链**：向量表（MSP + Reset_Handler）→ 链接器脚本（LMA/VMA）→ Reset_Handler → C 库 __main（.data 搬运 / .bss 清零）→ main() → OS，详见 [[启动流程]]。
 - **开发栈**：HAL/标准外设库、CMSIS（内核访问层）、链接脚本（Keil `.sct` / GCC `.ld`）。
 - **OTA 参考工程选型**：**STM32F411CEU6**（Cortex-M4F，外部晶振 25MHz、内部 96MHz）。其内部 Flash 可布局为 Bootloader 区 + App 标志区 `0x8008000`（Sector 2）+ App 运行区 `0x800C000`（Sector 3 起），`MAXAPP_SIZE=464KB`；配合外部 [[W25Q64]] 与 [[Keros]] 加密芯片实现 OTA（见 [[综合-智能手表OTA全流程]]）。
-- **低功耗模式**：提供睡眠/停机/待机三种低功耗模式，通过停时钟或断电逐级降低功耗，见 [[低功耗模式]]；进入指令为 Cortex-M 的 [[WFI与WFE]]；供电域（VDD/VDDA/VBAT、1.2V 域、后备域）架构见 [[STM32电源系统]]。
+- **低功耗模式**：提供睡眠/停机/待机三种低功耗模式，通过停时钟或断电逐级降低功耗，见 [[低功耗模式]]；进入指令为 Cortex-M 的 [[WFI与WFE]]；供电域（VDD/VDDA/VBAT、1.2V 域、后备域）架构见 [[STM32电源系统]]。与 [[FreeRTOS]] 配合时，可由 [[Tickless空闲机制]] 在系统空闲期间暂停 SysTick，并在唤醒后补偿 Tick。
 
 ### 案例实现：参考工程中的分区（源码细节）
 
@@ -37,6 +37,7 @@ STM32 是意法半导体（ST）基于 **ARM Cortex-M** 内核的 32 位微控�
 - [[volatile]] — 硬件寄存器访问规范
 - [[低功耗模式]] — 睡眠/停机/待机三种低功耗模式
 - [[WFI与WFE]] — 低功耗等待指令入口
+- [[Tickless空闲机制]] — RTOS 空闲期间的无节拍睡眠
 - [[STM32电源系统]] — 供电域与 1.2V 域架构
 - [[摘要-stm32启动流程]] — 来源
 - [[摘要-stm32低功耗模式]] — 来源

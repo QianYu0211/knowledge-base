@@ -1,7 +1,7 @@
 ---
 title: "HID协议"
 type: concept
-tags: [低功耗蓝牙, HID, HOGP, 外设, Report Map]
+tags: [低功耗蓝牙, HID, HOGP, 外设, Report-Map]
 sources: [raw/01-articles/【低功耗蓝牙】⑤ HID协议.md]
 last_updated: 2026-08-14
 ---

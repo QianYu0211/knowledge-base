@@ -1,7 +1,7 @@
 ---
 title: "CAN节点状态"
 type: concept
-tags: [CAN, 节点状态, 错误处理, 状态机, BUS OFF]
+tags: [CAN, 节点状态, 错误处理, 状态机, BUS-OFF]
 sources: ["raw/01-articles/CAN通信基础：总线关闭（BUS OFF）的概念和处理方式.md"]
 last_updated: 2026-08-14
 ---

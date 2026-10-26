@@ -1,7 +1,7 @@
 ---
 title: "BLE广播"
 type: concept
-tags: [低功耗蓝牙, 广播, AD Structure, AD Type]
+tags: [低功耗蓝牙, 广播, AD-Structure, AD-Type]
 sources: [raw/01-articles/【低功耗蓝牙】广播数据分析.md]
 last_updated: 2026-08-14
 ---

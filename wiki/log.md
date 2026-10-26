@@ -458,3 +458,80 @@
 ## [2026-08-18] sync | README 全面修订：与规则重构及仓库实况对齐
 - **变更**: 更新 [[README]] — ① skills 列表与实际对齐（删除不存在的 obsidian-cli/defuddle，补充 obsidian-markdown/mermaid-visualizer）；② raw 结构对齐（删除不存在的 04-meeting_notes）；③ 新增"规则文件体系"表（SSOT/CLAUDE.md/AGENTS.md 三层职责）；④ 使用方式改为跨工具表述（Claude Code / Codex / Gemini CLI / Cursor / pi）
 - **冲突**: 无 — 纯文档修订，未触及 raw/ 与 wiki/ 知识内容
+
+## [2026-08-19] ingest | 摄入闪存原理与 eMMC/UFS 演进两篇文章（全景摄入方案A）
+- **变更**: 新增 [[摘要-闪存原理与nor-nand对比]], [[摘要-emmc-ufs演进]], [[NorVsNand]], [[Emmc]], [[Ufs]]; 更新 [[W25Q64]]（关联连接补 NOR 原理回链）, [[index]]
+- **冲突**: 无 — EEPROM 无专属素材（仅 eMMC 素材中一句历史提及），按方案 A 不独立建页，仅作为「EPROM→EEPROM→NOR→NAND→eMMC/UFS」演进链起点在 [[NorVsNand]] 中交代；NAND/eMMC/UFS 此前为库内空白，本次补齐
+
+## [2026-08-19] sync | 拆分 NorVsNand 为 NorFlash / NandFlash 两个概念页（按用户指示）
+- **变更**: 删除 [[NorVsNand]]; 新增 [[NorFlash]]（定义/演进链/热电子注入与隧道原理/并联随机寻址与XIP/对比速览/选型）, [[NandFlash]]（定义/隧道原理/串联页块访问/坏块-ECC-FTL工程难点/SLC-MLC-TLC/对比速览/选型）; 更新 [[W25Q64]]（回链改 [[NorFlash]]）、[[Emmc]]/[[Ufs]]（回链改 [[NandFlash]]）、[[摘要-闪存原理与nor-nand对比]]/[[摘要-emmc-ufs演进]]（回链拆双）、[[index]]（Concepts 条目拆二）
+- **冲突**: 无 — 纯结构拆分，内容按两个流派各自的原理/特点/选型重新组织，对比表保留在双方页内互链
+
+## [2026-08-19] ingest | 归档源文件
+- **变更**: raw/01-articles/Flash闪存储存原理以及NAND flash、NOR flash（详细）对比总结_flash存储原理-CSDN博客.md, 几种闪存技术：eMMC、UFS2.1、UFS3.0、SSD_ufs vs.emmcperformance scaling-CSDN博客.md → raw/09-archive/（本次摄入素材，按惯例归档）
+- **冲突**: 无 — 文件原样移动，wiki 页面 sources 字段保持原 raw/01-articles/ 路径（与既有页面惯例一致）
+
+## [2026-08-19] sync | 规则层豁免「归档」操作
+- **变更**: 更新 [[docs/agent-rules.md]] — ① 核心目录权限表 raw/ 行新增「唯一豁免：归档」：允许 /ingest 完成后将已摄入源文件从 raw/01-articles/ 等活跃子目录原样移动至 raw/09-archive/（归位整理，不改变内容），并追加 log 记录；② /ingest 工作流说明补充归档步骤
+- **冲突**: 无 — 规则文本修订，与既有归档惯例（log 历史记录）一致；raw 只读底线保持不变，归档仅限「原样移动 + log 记录」两个动作
+
+## [2026-08-19] sync | 统一存储簇 tag 命名（去空格 + 全大写缩写）
+- **变更**: 更新 6 页 frontmatter tags — `NOR Flash`→`NOR-Flash`（[[NorFlash]], [[W25Q64]], [[摘要-闪存原理与nor-nand对比]]）、`NAND Flash`→`NAND-Flash`（[[NandFlash]], [[Emmc]], [[摘要-闪存原理与nor-nand对比]]）、`eMMC`→`EMMC`（[[Emmc]], [[摘要-emmc-ufs演进]]）；正文文本保持官方写法（eMMC/NOR Flash）不变
+- **冲突**: 无 — 仅统一 frontmatter tag 命名（Obsidian 中空格 tag 需转义、无法用 #tag 语法，缩写大小写混杂），页面内容未变；全库剩余带空格 tag（BUS OFF/AD Structure/AD Type/Report Map）属历史既有，未在本次范围
+
+## [2026-08-19] sync | 订正 eMMC tag 保留官方写法 + 固化 tag 命名规范至 skill
+- **变更**: ① [[Emmc]] / [[摘要-emmc-ufs演进]] 的 tag 由 `EMMC` 改回 `eMMC`（官方写法，按用户指示不强制全大写）；② 确认 [[obsidian-markdown]] skill 已规定 tag 字符集（字母/数字非首字符/下划线/连字符/斜杠，**不含空格**）——`NOR Flash` 空格问题属不合规，`NOR-Flash` 连字符修复方向正确；③ 补充 [[obsidian-markdown]] 的 SKILL.md 与 references/PROPERTIES.md：tag 禁空格用连字符 + 专有名词保留官方写法（eMMC/nRF52840/FreeRTOS/volatile），防止再次机械全大写
+- **冲突**: 无 — 最终统一规则：tag 禁空格（空格→连字符）、专有名词保留官方大小写；正文文本不受影响
+
+## [2026-08-19] sync | 清除全库剩余带空格 tag（统一为连字符）
+- **变更**: 更新 5 页 frontmatter tags — `BUS OFF`→`BUS-OFF`（[[BUS OFF恢复策略]], [[CAN节点状态]], [[摘要-can-bus-off]]）、`AD Structure`→`AD-Structure`、`AD Type`→`AD-Type`（[[BLE广播]]）、`Report Map`→`Report-Map`（[[HID协议]]）；页面名/正文不受影响（如页面 [[BUS OFF恢复策略]] 名称含空格属 Obsidian 页面名规范，非 tag）
+- **冲突**: 无 — 遵循 [[obsidian-markdown]] skill tag 规范（不含空格，连字符连接）；专有名词官方写法保留
+
+## [2026-08-19] sync | 配置 pi 挂载 Claude Code skills（解决 /ingest 不可用）
+- **变更**: 新增 .pi/settings.json — `{"skills": ["../.claude/skills"]}`，使 pi 加载项目 .claude/skills/ 下的 ingest/query/lint/obsidian-markdown/mermaid-visualizer；pi 中触发方式为 /skill:ingest（或描述自动触发），非 Claude Code 的 /ingest
+- **冲突**: 无 — 纯工具配置，未触及知识内容；pi 官方文档（skills.md "Using Skills from Other Harnesses"）明确支持该挂载方式
+
+## [2026-08-19] sync | 创建 .agents/skills 标准目录（pi 原生加载，替代 .pi 桥接）
+- **变更**: 新增 .agents/skills/ — 复制 .claude/skills 下全部 5 个 skill（ingest/query/lint/obsidian-markdown/mermaid-visualizer）至 agentskills.io 标准位置；移除 .pi/settings.json（.pi 目录一并清理），pi 原生发现 .agents/skills，无需桥接配置
+- **冲突**: 无 — 纯工具配置迁移；.claude/skills 保留给 Claude Code 使用，两份内容当前完全一致（diff 验证），后续修改 skill 需两边同步
+
+## [2026-08-19] lint | 清理误创建的 nul 空文件
+- **变更**: 删除仓库根目录 0 字节文件 nul（Windows 保留设备名被 WSL/bash 的 `> nul` 重定向误创建）；git 状态恢复干净
+- **冲突**: 无 — 空文件无内容，删除无风险
+
+## [2026-08-19] lint | 修复死链 + 落实 log 历史豁免规则
+- **变更**: ① 修复 [[综合-ota主线导航]] 死链 `[[log.md]]`→`[[log]]`；② 豁免规则落地：.agents/skills/lint/SKILL.md 与 .claude/skills/lint/SKILL.md 同步新增「死链豁免规则」（log.md append-only 历史链接豁免、图片/附件嵌入单独核对 assets/），docs/agent-rules.md 的 /lint 工作流说明同步补充
+- **冲突**: 无 — 修复 1 处可修复死链；log.md 内 5 处历史链接（NorVsNand/蔡盼盼/AGENTS.md/CLAUDE.md/obsidian-markdown）与 1 处缺失资产（ota-启动流程对比.png）按豁免规则不再视为问题
+
+## [2026-08-20] query | 设计 Wiki 知识学习与消化路径
+- **输出**: [[综合-启动到任务切换]], [[综合-生产消费缓冲]], [[综合-状态机无处不在]], [[综合-可靠传输工具箱]], [[综合-OTA主线导航]], [[综合-优先级规划]], [[综合-同步异步]], [[综合-rtos与linux]] — 即时回答未新建页面
+
+## [2026-08-20] query | 制定嵌入式系统整体认知学习计划
+- **输出**: [[综合-启动到任务切换]], [[综合-生产消费缓冲]], [[综合-状态机无处不在]], [[综合-可靠传输工具箱]], [[综合-优先级规划]], [[综合-ota主线导航]] — 即时回答未新建页面
+
+## [2026-08-20] query | 按知识模块制定费曼式学习路径
+- **输出**: 按核心主线划分 Wiki 为 6 个学习块，并定义每块的费曼验收标准 — 即时回答未新建页面
+
+## [2026-08-21] query | 开始核心块2数据流与并发模型学习
+- **输出**: 依据 [[综合-生产消费缓冲]], [[综合-同步异步]] 开始快速能力摸底；即时回答未新建页面
+
+## [2026-08-21] ingest | 摄入金字塔原理与结构化表达视频字幕
+- **变更**: 新增 [[摘要-金字塔原理与结构化表达]], [[金字塔原理]], [[结构化思考]], [[结构化表达]], [[结论先行]], [[归纳分组]], [[组内逻辑统一]], [[向上提炼]], [[MECE原则]]; 更新 [[index]]
+- **冲突**: 无
+
+## [2026-08-21] ingest | 归档源文件
+- **变更**: raw/01-articles/【庞颖】专治嘴笨，帮你更高效地思考、表达和解决问题 ｜奇葩说辩手庞颖 x 《金字塔原理》—【2023-07-03】-中文.md → raw/09-archive/
+- **冲突**: 无
+
+## [2026-08-21] sync | 优化费曼式教学策略
+- **变更**: 将桌面学习计划升级为技术理解与表达能力双轨教学；新增最小知识点拆分、三问摸底、双评分、金字塔思路版、口述版、三层反馈、三轮复述、15分钟极简流程和二维进度矩阵
+- **关联**: [[金字塔原理]], [[结构化思考]], [[结构化表达]]
+- **冲突**: 无
+
+## [2026-08-21] query | 建立桌面费曼学习系统（引用 wiki 为知识源）
+- **变更**: 桌面新建「嵌入式系统费曼学习系统」：计划.md（12 个面试模块主线 + 进度矩阵）、模拟面试题.md（题库副本）、agent.md（教练协议）、skill/SKILL.md（技能定义）; 引用 wiki 页面 92 处（M1~M12 模块页）
+- **冲突**: 无 — 仅只读引用，未向 wiki/ 写入学习系统页面
+
+## [2026-08-23] ingest | 整理 FreeRTOS Tickless 素材
+- **变更**: 新增 [[摘要-freertos-tickless]]、[[Tickless空闲机制]]；更新 [[FreeRTOS]]、[[低功耗模式]]、[[WFI与WFE]]、[[STM32]]、[[index]]
+- **冲突**: 无 — 素材由用户直接提供，无 raw 源文件可归档
